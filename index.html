@@ -1,0 +1,3859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanskriti-Setu | Bridging Heritage & Technology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary-light: #f8f5f0;
+            --secondary-light: #e8e2d6;
+            --accent-light: #8b4513;
+            --text-light: #2c1810;
+            --border-light: #d4c8b5;
+            
+            --primary-dark: #1a1a1a;
+            --secondary-dark: #2a2a2a;
+            --accent-dark: #c19a6b;
+            --text-dark: #e8e2d6;
+            --border-dark: #444444;
+            
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            
+            --transition: all 0.3s ease;
+        }
+
+        .light-theme {
+            --primary: var(--primary-light);
+            --secondary: var(--secondary-light);
+            --accent: var(--accent-light);
+            --text: var(--text-light);
+            --border: var(--border-light);
+        }
+
+        .dark-theme {
+            --primary: var(--primary-dark);
+            --secondary: var(--secondary-dark);
+            --accent: var(--accent-dark);
+            --text: var(--text-dark);
+            --border: var(--border-dark);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border-radius: 0 !important;
+        }
+
+        body {
+            font-family: 'Figtree', sans-serif;
+            background-color: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            transition: var(--transition);
+            padding-bottom: 70px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Bodoni Moda', serif;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            z-index: 1000;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Bodoni Moda', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .hamburger {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background-color: var(--text);
+            transition: var(--transition);
+        }
+
+        .profile-icon {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .profile-icon:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-icon i {
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        /* Side Drawer */
+        .side-drawer {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--glass-border);
+            z-index: 1001;
+            transition: var(--transition);
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+        }
+
+        .side-drawer.active {
+            left: 0;
+        }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .drawer-close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .drawer-menu {
+            list-style: none;
+        }
+
+        .drawer-menu li {
+            margin-bottom: 1rem;
+        }
+
+        .drawer-menu a {
+            display: flex;
+            align-items: center;
+            color: var(--text);
+            text-decoration: none;
+            padding: 0.75rem 0;
+            transition: var(--transition);
+            border-bottom: 1px solid transparent;
+        }
+
+        .drawer-menu a:hover {
+            border-bottom: 1px solid var(--accent);
+            padding-left: 0.5rem;
+        }
+
+        .menu-icon {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding: 0.75rem 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background-color: var(--secondary);
+            cursor: pointer;
+        }
+
+        .toggle-switch::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: var(--accent);
+            transition: var(--transition);
+        }
+
+        .dark-theme .toggle-switch::after {
+            left: 28px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 70px;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Home Page */
+        .home-section {
+            padding: 2rem 0;
+        }
+
+        .horizontal-nav {
+            display: flex;
+            overflow-x: auto;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .horizontal-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-item {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 1.5rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            transform: scale(1.05);
+            border: 1px solid var(--accent);
+        }
+
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 0.5rem;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+
+        .feed-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .feed-card {
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .feed-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .feed-image {
+            width: 100%;
+            height: 200px;
+            background-color: var(--secondary);
+            position: relative;
+            overflow: hidden;
+            mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+        }
+
+        .feed-image::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--accent) 0%, transparent 100%);
+            opacity: 0.2;
+            transition: var(--transition);
+        }
+
+        .feed-card:hover .feed-image::after {
+            opacity: 0.4;
+        }
+
+        .feed-content {
+            padding: 1rem;
+        }
+
+        .feed-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feed-description {
+            font-size: 0.9rem;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        /* Page Sections */
+        .page-section {
+            display: none;
+            padding: 2rem 0;
+            min-height: 80vh;
+        }
+
+        .page-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .home-btn {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Figtree', sans-serif;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .home-btn:hover {
+            background-color: var(--text);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        /* Scanner Page */
+        .scanner-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .scanner-view {
+            width: 100%;
+            height: 400px;
+            background-color: var(--secondary);
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed var(--accent);
+            border-radius: 20px;
+        }
+
+        #camera-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-frame {
+            width: 200px;
+            height: 200px;
+            border: 3px solid var(--accent);
+            border-radius: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1;
+            }
+            50% { 
+                opacity: 0.7;
+            }
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent);
+            animation: scan 2s linear infinite;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .scan-button {
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .scan-button:hover {
+            background: var(--text);
+        }
+
+        .scan-button.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Cultural Heritage Info Display */
+        .heritage-info {
+            background: var(--secondary);
+            padding: 2rem;
+            border-radius: 20px;
+            margin: 2rem auto;
+            width: 100%;
+            max-width: 700px;
+            border: 1px solid var(--border);
+            text-align: left;
+            box-shadow: var(--shadow);
+        }
+
+        .heritage-header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 1rem;
+        }
+
+        .heritage-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .heritage-meta {
+            color: var(--text);
+            opacity: 0.8;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .meta-tag {
+            background: var(--primary);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+        }
+
+        .heritage-description {
+            line-height: 1.7;
+            color: var(--text);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            text-align: justify;
+        }
+
+        .heritage-details {
+            margin-bottom: 2rem;
+        }
+
+        .detail-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem;
+            background: rgba(139, 92, 246, 0.08);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .detail-section strong {
+            color: var(--accent);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .heritage-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .read-aloud-btn {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .stop-aloud-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .save-btn {
+            background: var(--primary);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Maps Page - UPDATED WITH COMPREHENSIVE MAP */
+        .maps-container {
+            display: flex;
+            height: calc(100vh - 200px);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .maps-sidebar {
+            width: 400px;
+            background-color: var(--primary);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        .maps-view {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #heritage-map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .search-box {
+            margin: 15px 0;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--accent);
+            background: var(--primary);
+            color: var(--text);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .filters {
+            margin: 20px 0;
+        }
+
+        .filters select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid var(--border);
+            background: var(--primary);
+            color: var(--text);
+            border-radius: 5px;
+        }
+
+        .site-card {
+            background: var(--primary);
+            border: 1px solid var(--border);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .site-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.2);
+        }
+
+        .site-title {
+            color: var(--accent);
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .site-distance {
+            color: var(--text);
+            opacity: 0.8;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .location-btn {
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 12px 20px;
+            margin: 10px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .location-btn:hover {
+            background: var(--text);
+        }
+
+        .stats-panel {
+            background: var(--secondary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 8px;
+            background: var(--primary);
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        .custom-marker {
+            background: var(--accent);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: bold;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* AR Storytelling Page */
+        .ar-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .ar-hero {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .ar-map {
+            height: 400px;
+            background-color: var(--secondary);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+        }
+
+        .ar-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .ar-frame {
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+        }
+
+        .ar-frame:hover {
+            transform: scale(1.02);
+            border-color: var(--accent);
+        }
+
+        .ar-image {
+            width: 100%;
+            height: 180px;
+            background-color: var(--secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ar-image::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--accent) 0%, transparent 100%);
+            opacity: 0.3;
+            transition: var(--transition);
+        }
+
+        .ar-frame:hover .ar-image::after {
+            opacity: 0.5;
+        }
+
+        .ar-content {
+            padding: 1rem;
+        }
+
+        .ar-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ar-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Merch Page */
+        .merch-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .merch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .merch-card {
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+            mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+        }
+
+        .merch-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .merch-image {
+            width: 100%;
+            height: 250px;
+            background-color: var(--secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .merch-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--accent);
+            color: var(--primary);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .merch-content {
+            padding: 1rem;
+        }
+
+        .merch-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .merch-price {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .merch-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .merch-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--accent);
+            color: var(--primary);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Figtree', sans-serif;
+            font-weight: 600;
+        }
+
+        .merch-btn:hover {
+            background-color: var(--text);
+        }
+
+        /* Mobile Ribbon */
+        .mobile-ribbon {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .ribbon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 0.5rem;
+            flex: 1;
+            text-align: center;
+        }
+
+        .ribbon-item:hover, .ribbon-item.active {
+            color: var(--accent);
+        }
+
+        .ribbon-icon {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .ribbon-label {
+            font-size: 0.7rem;
+        }
+
+        .scanner-center {
+            background-color: var(--accent);
+            color: var(--primary);
+            padding: 0.75rem;
+            border-radius: 0;
+            transform: translateY(-10px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .scanner-center .ribbon-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--secondary);
+            padding: 2rem 0;
+            margin-top: 3rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            margin-top: 1.5rem;
+        }
+
+        /* NEW AUTHENTICATION STYLES */
+        .auth-section {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .auth-section.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-container {
+            background-color: var(--primary);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-input {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            background-color: var(--primary);
+            color: var(--text);
+            font-family: 'Figtree', sans-serif;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .auth-btn {
+            padding: 0.75rem;
+            background-color: var(--accent);
+            color: var(--primary);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Figtree', sans-serif;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .auth-btn:hover {
+            background-color: var(--text);
+        }
+
+        .google-auth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background-color: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Figtree', sans-serif;
+            font-weight: 600;
+        }
+
+        .google-auth-btn:hover {
+            background-color: var(--accent);
+            color: var(--primary);
+        }
+
+        .google-logo {
+            width: 18px;
+            height: 18px;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--text);
+            opacity: 0.7;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background-color: var(--border);
+        }
+
+        .auth-divider span {
+            padding: 0 1rem;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .auth-link {
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .auth-link:hover {
+            color: var(--text);
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .welcome-section {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .welcome-section.active {
+            display: flex;
+        }
+
+        .welcome-content {
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .welcome-title {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--text);
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-btn {
+            padding: 1rem 2rem;
+            background-color: var(--accent);
+            color: var(--primary);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Figtree', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .welcome-btn:hover {
+            background-color: var(--text);
+            transform: translateY(-2px);
+        }
+
+        /* Camera Permission Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: var(--primary);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text);
+            opacity: 0.8;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: var(--text);
+            padding: 15px 25px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            z-index: 10001;
+            max-width: 300px;
+            text-align: center;
+            display: none;
+        }
+
+        /* NEW MOBILE-SPECIFIC STYLES */
+        
+        /* Prevent zoom on input focus for iOS */
+        @media (max-width: 768px) {
+            input, select, textarea {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+            
+            /* Larger touch targets */
+            .nav-item, .ribbon-item {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .scanner-btn, .location-btn, .action-btn, .merch-btn, .auth-btn {
+                min-height: 44px;
+                padding: 12px 20px;
+                font-size: 16px; /* Better readability on mobile */
+            }
+            
+            /* Improved scanner for mobile */
+            .scanner-view {
+                height: 60vh;
+                max-height: 500px;
+            }
+            
+            /* Better mobile navigation */
+            .mobile-ribbon {
+                padding: 10px 0;
+                height: 70px;
+            }
+            
+            .ribbon-item {
+                padding: 8px 5px;
+            }
+            
+            .ribbon-icon {
+                font-size: 1.4rem;
+                margin-bottom: 4px;
+            }
+            
+            .ribbon-label {
+                font-size: 0.75rem;
+            }
+            
+            /* Prevent text selection on interactive elements */
+            .nav-item, .ribbon-item, .scanner-btn, .location-btn, .action-btn {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+            
+            /* Improved modal for mobile */
+            .modal-content {
+                margin: 20px;
+                padding: 1.5rem;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            /* Better camera permission modal */
+            .permission-modal .modal-content {
+                text-align: center;
+            }
+            
+            .permission-steps {
+                text-align: left;
+                margin: 1.5rem 0;
+            }
+            
+            .permission-step {
+                display: flex;
+                align-items: flex-start;
+                margin-bottom: 1rem;
+            }
+            
+            .step-number {
+                background: var(--accent);
+                color: var(--primary);
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 10px;
+                flex-shrink: 0;
+                font-size: 0.9rem;
+                font-weight: bold;
+            }
+            
+            /* Improved toast for mobile */
+            .toast {
+                width: 90%;
+                max-width: 300px;
+                bottom: 80px; /* Above mobile ribbon */
+            }
+            
+            /* Touch feedback */
+            .touch-feedback:active {
+                transform: scale(0.98);
+                opacity: 0.8;
+            }
+        }
+        
+        /* High DPI screen optimizations */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .nav-icon, .ribbon-icon {
+                -webkit-font-smoothing: antialiased;
+            }
+        }
+        
+        /* Orientation-specific adjustments */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .scanner-view {
+                height: 50vh;
+            }
+            
+            .mobile-ribbon {
+                height: 60px;
+            }
+            
+            .ribbon-icon {
+                font-size: 1.2rem;
+            }
+            
+            .ribbon-label {
+                font-size: 0.7rem;
+            }
+        }
+        
+        /* Very small screens */
+        @media (max-width: 360px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .heritage-name {
+                font-size: 1.4rem;
+            }
+            
+            .auth-container {
+                padding: 1.2rem;
+            }
+        }
+        
+        /* Dark mode improvements for mobile */
+        @media (prefers-color-scheme: dark) {
+            .light-theme {
+                /* Auto dark mode for devices that prefer it */
+            }
+        }
+
+        /* Responsive */
+        @media (min-width: 769px) {
+            .mobile-ribbon {
+                display: none;
+            }
+            
+            body {
+                padding-bottom: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .feed-section, .cultural-sites, .ar-preview, .merch-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .scanner-view, .maps-view {
+                height: 300px;
+            }
+            
+            .horizontal-nav {
+                display: none;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .auth-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .home-btn {
+                position: relative;
+                margin-bottom: 1rem;
+                transform: none;
+            }
+
+            .maps-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .maps-sidebar {
+                width: 100%;
+                height: 300px;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .maps-view {
+                height: 400px;
+            }
+
+            .heritage-info {
+                padding: 1.5rem;
+                margin: 1rem auto;
+            }
+
+            .heritage-name {
+                font-size: 1.6rem;
+            }
+
+            .heritage-actions {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+            }
+        }
+
+        /* Hidden elements */
+        .hidden {
+            display: none !important;
+        }
+
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <!-- Welcome Section -->
+    <section id="welcome" class="welcome-section active">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Sanskriti-Setu</h1>
+            <p class="welcome-subtitle">Bridging Heritage & Technology - Explore India's Rich Cultural Legacy</p>
+            <button class="welcome-btn touch-feedback" id="get-started-btn">Get Started</button>
+        </div>
+    </section>
+
+    <!-- Authentication Sections -->
+    <section id="login" class="auth-section">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h2 class="auth-title">Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to continue your cultural journey</p>
+            </div>
+            
+            <form class="auth-form" id="login-form">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="login-email" required>
+                    <div class="error-message" id="login-email-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="login-password" required>
+                    <div class="error-message" id="login-password-error"></div>
+                </div>
+                
+                <button type="submit" class="auth-btn touch-feedback">Sign In</button>
+            </form>
+            
+            <div class="auth-divider">
+                <span>or</span>
+            </div>
+            
+            <button class="google-auth-btn touch-feedback" id="google-login-btn">
+                <svg class="google-logo" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Continue with Google
+            </button>
+            
+            <div class="auth-switch">
+                <span>Don't have an account? </span>
+                <span class="auth-link" id="show-signup">Sign up</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="signup" class="auth-section">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h2 class="auth-title">Join Sanskriti-Setu</h2>
+                <p class="auth-subtitle">Create your account to start exploring</p>
+            </div>
+            
+            <form class="auth-form" id="signup-form">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="signup-name" required>
+                    <div class="error-message" id="signup-name-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="signup-email" required>
+                    <div class="error-message" id="signup-email-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="signup-password" required>
+                    <div class="error-message" id="signup-password-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" class="form-input" id="signup-confirm-password" required>
+                    <div class="error-message" id="signup-confirm-password-error"></div>
+                </div>
+                
+                <button type="submit" class="auth-btn touch-feedback">Create Account</button>
+            </form>
+            
+            <div class="auth-divider">
+                <span>or</span>
+            </div>
+            
+            <button class="google-auth-btn touch-feedback" id="google-signup-btn">
+                <svg class="google-logo" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Continue with Google
+            </button>
+            
+            <div class="auth-switch">
+                <span>Already have an account? </span>
+                <span class="auth-link" id="show-login">Sign in</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- YOUR EXISTING APP CONTENT (HIDDEN INITIALLY) -->
+    <div id="main-app" style="display: none;">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="container nav-container">
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <a href="#" class="logo" id="logo-home">Sanskriti-Setu</a>
+                <div class="profile-icon" id="profile-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Side Drawer Menu -->
+        <div class="side-drawer" id="side-drawer">
+            <div class="drawer-header">
+                <h3>Menu</h3>
+                <div class="drawer-close" id="drawer-close">×</div>
+            </div>
+            <ul class="drawer-menu">
+                <li><a href="#"><span class="menu-icon"><i class="fas fa-info-circle"></i></span>About Us</a></li>
+                <li><a href="#"><span class="menu-icon"><i class="fas fa-history"></i></span>History</a></li>
+                <li><a href="#"><span class="menu-icon"><i class="fas fa-cog"></i></span>Settings</a></li>
+                <li><a href="#" class="nav-to-merch"><span class="menu-icon"><i class="fas fa-shopping-bag"></i></span>Buy Merch</a></li>
+                <li>
+                    <div class="theme-toggle">
+                        <span>Theme</span>
+                        <div class="toggle-switch" id="theme-toggle"></div>
+                    </div>
+                </li>
+                <li>
+                    <select style="width: 100%; padding: 0.75rem; background: var(--primary); color: var(--text); border: 1px solid var(--border);">
+                        <option>English</option>
+                        <option>Hindi</option>
+                        <option>Marathi</option>
+                        <option>Tamil</option>
+                    </select>
+                </li>
+                <li>
+                    <a href="#" id="logout-btn" style="color: #dc2626;">
+                        <span class="menu-icon"><i class="fas fa-sign-out-alt"></i></span>Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Home Page -->
+            <section id="home" class="page-section active">
+                <div class="container">
+                    <div class="home-section">
+                        <!-- Horizontal Navigation -->
+                        <div class="horizontal-nav">
+                            <div class="nav-item active touch-feedback" data-target="home">
+                                <div class="nav-icon"><i class="fas fa-home"></i></div>
+                                <span>Home</span>
+                            </div>
+                            <div class="nav-item touch-feedback" data-target="maps">
+                                <div class="nav-icon"><i class="fas fa-map-marked-alt"></i></div>
+                                <span>Maps</span>
+                            </div>
+                            <div class="nav-item touch-feedback" data-target="scanner">
+                                <div class="nav-icon"><i class="fas fa-camera"></i></div>
+                                <span>Scanner</span>
+                            </div>
+                            <div class="nav-item touch-feedback" data-target="ar">
+                                <div class="nav-icon"><i class="fas fa-vr-cardboard"></i></div>
+                                <span>AR Stories</span>
+                            </div>
+                        </div>
+
+                        <!-- Feed Section -->
+                        <div class="feed-section">
+                            <div class="feed-card">
+                                <div class="feed-image"></div>
+                                <div class="feed-content">
+                                    <h3 class="feed-title">Ancient Temple Architecture</h3>
+                                    <p class="feed-description">Explore the intricate designs of South Indian temples from the Chola period.</p>
+                                </div>
+                            </div>
+                            <div class="feed-card">
+                                <div class="feed-image"></div>
+                                <div class="feed-content">
+                                    <h3 class="feed-title">Traditional Textile Patterns</h3>
+                                    <p class="feed-description">Discover the symbolism behind traditional Indian textile designs.</p>
+                                </div>
+                            </div>
+                            <div class="feed-card">
+                                <div class="feed-image"></div>
+                                <div class="feed-content">
+                                    <h3 class="feed-title">Folk Art Revival</h3>
+                                    <p class="feed-description">How contemporary artists are reinventing traditional folk art forms.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Maps Page - UPDATED WITH COMPREHENSIVE MAP -->
+            <section id="maps" class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <button class="home-btn touch-feedback" onclick="navigateToPage('home')">
+                            <i class="fas fa-home"></i> Home
+                        </button>
+                        <h2 class="section-title">Cultural Heritage Map</h2>
+                        <p class="section-subtitle">Discover cultural sites and heritage locations across India</p>
+                    </div>
+                    
+                    <div class="maps-container">
+                        <div class="maps-sidebar">
+                            <h1 style="color: var(--accent); margin-bottom: 20px;">🇮🇳 Cultural Heritage Map</h1>
+                            
+                            <div class="search-box">
+                                <input type="text" id="site-search" placeholder="🔍 Search cultural heritage sites...">
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button class="location-btn touch-feedback" id="get-location">
+                                    📍 Use My Location
+                                </button>
+                                <button class="location-btn touch-feedback" id="show-all-sites">
+                                    🏛️ Show All India
+                                </button>
+                            </div>
+
+                            <div class="filters">
+                                <select id="category-filter">
+                                    <option value="all">All Cultural Sites</option>
+                                    <option value="temple">🛕 Temples</option>
+                                    <option value="fort">🏰 Forts</option>
+                                    <option value="monument">🏛️ Monuments</option>
+                                    <option value="palace">👑 Palaces</option>
+                                    <option value="cultural_site">🎨 Cultural Sites</option>
+                                    <option value="mosque">🕌 Mosques</option>
+                                    <option value="church">⛪ Churches</option>
+                                    <option value="gurudwara">🕯️ Gurudwaras</option>
+                                    <option value="museum">🏛️ Museums</option>
+                                    <option value="stepwell">💧 Stepwells</option>
+                                    <option value="cave">🕳️ Caves</option>
+                                </select>
+                                
+                                <select id="radius-filter">
+                                    <option value="10">Within 10 km</option>
+                                    <option value="25">Within 25 km</option>
+                                    <option value="50" selected>Within 50 km</option>
+                                    <option value="100">Within 100 km</option>
+                                    <option value="200">Within 200 km</option>
+                                </select>
+                            </div>
+
+                            <div class="stats-panel" id="stats-panel">
+                                <h4>📊 Cultural Sites Overview</h4>
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <div class="stat-number" id="total-sites">0</div>
+                                        <div class="stat-label">Total Sites</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number" id="nearby-sites">0</div>
+                                        <div class="stat-label">Nearby Sites</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number" id="temples-count">0</div>
+                                        <div class="stat-label">Temples</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number" id="forts-count">0</div>
+                                        <div class="stat-label">Forts</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="site-info">
+                                <h3>Explore India's Cultural Heritage</h3>
+                                <p>Click on any marker to see details about cultural sites</p>
+                            </div>
+
+                            <div id="cultural-sites-list"></div>
+                        </div>
+
+                        <div class="maps-view">
+                            <div id="heritage-map"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Scanner Page -->
+            <section id="scanner" class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <button class="home-btn touch-feedback" onclick="navigateToPage('home')">
+                            <i class="fas fa-home"></i> Home
+                        </button>
+                        <h2 class="section-title">Cultural Heritage Scanner</h2>
+                        <p class="section-subtitle">Scan any cultural artifact, dance form, or traditional element to learn about its history</p>
+                    </div>
+                    <div class="scanner-container">
+                        <div class="scanner-view">
+                            <video id="camera-preview" autoplay playsinline></video>
+                            <div class="scanner-overlay">
+                                <div class="scan-frame"></div>
+                            </div>
+                            <div class="scan-line" id="scan-line"></div>
+                        </div>
+                        <button class="scan-button touch-feedback" id="scanButton">
+                            <span>📷 Capture & Scan</span>
+                        </button>
+                        <canvas id="captureCanvas" class="hidden"></canvas>
+                    </div>
+
+                    <!-- Cultural Heritage Info Display -->
+                    <div class="heritage-info hidden" id="heritageInfo">
+                        <!-- Dynamic content from Gemini AI -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- AR Storytelling Page -->
+            <section id="ar" class="page-section">
+                <div class="container">
+                    <div class="ar-hero">
+                        <button class="home-btn touch-feedback" onclick="navigateToPage('home')">
+                            <i class="fas fa-home"></i> Home
+                        </button>
+                        <h1>Augmented Reality Integrated Storytelling</h1>
+                        <p>Forged from Tradition, Echoing Through Time</p>
+                    </div>
+                    <div class="ar-map" id="ar-map"></div>
+                    <div class="ar-preview">
+                        <div class="ar-frame touch-feedback" data-ar="shore-temple">
+                            <div class="ar-image"></div>
+                            <div class="ar-content">
+                                <h3 class="ar-title">Mahabalipuram Shore Temple</h3>
+                                <p class="ar-description">Explore the Pallava dynasty's architectural marvel by the sea.</p>
+                            </div>
+                        </div>
+                        <div class="ar-frame touch-feedback" data-ar="ajanta">
+                            <div class="ar-image"></div>
+                            <div class="ar-content">
+                                <h3 class="ar-title">Ajanta Cave Paintings</h3>
+                                <p class="ar-description">Step into ancient Buddhist art and narratives.</p>
+                            </div>
+                        </div>
+                        <div class="ar-frame touch-feedback" data-ar="chola">
+                            <div class="ar-image"></div>
+                            <div class="ar-content">
+                                <h3 class="ar-title">Chola Bronze Art</h3>
+                                <p class="ar-description">Witness the mastery of Chola period metal casting.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Merch Page -->
+            <section id="merch" class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <button class="home-btn touch-feedback" onclick="navigateToPage('home')">
+                            <i class="fas fa-home"></i> Home
+                        </button>
+                        <h2 class="section-title">Cultural Marketplace</h2>
+                        <p class="section-subtitle">Authentic handicrafts and merchandise celebrating Indian heritage</p>
+                    </div>
+                    <div class="merch-container">
+                        <div class="merch-grid">
+                            <div class="merch-card" data-product="saree">
+                                <div class="merch-image"></div>
+                                <div class="merch-content">
+                                    <h3 class="merch-title">Handwoven Silk Saree</h3>
+                                    <div class="merch-price">₹8,500</div>
+                                    <p class="merch-description">Traditional Banarasi silk with intricate zari work.</p>
+                                    <button class="merch-btn touch-feedback">Add to Cart</button>
+                                </div>
+                            </div>
+                            <div class="merch-card" data-product="madhubani">
+                                <div class="merch-image"></div>
+                                <div class="merch-content">
+                                    <h3 class="merch-title">Madhubani Art Print</h3>
+                                    <div class="merch-price">₹2,200</div>
+                                    <p class="merch-description">Authentic Mithila painting on handmade paper.</p>
+                                    <button class="merch-btn touch-feedback">Add to Cart</button>
+                                </div>
+                            </div>
+                            <div class="merch-card" data-product="nataraja">
+                                <div class="merch-image"></div>
+                                <div class="merch-content">
+                                    <h3 class="merch-title">Brass Nataraja Statue</h3>
+                                    <div class="merch-price">₹5,700</div>
+                                    <p class="merch-description">Handcrafted depiction of Shiva as cosmic dancer.</p>
+                                    <button class="merch-btn touch-feedback">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Mobile Ribbon -->
+        <div class="mobile-ribbon">
+            <div class="ribbon-item active touch-feedback" data-target="home">
+                <div class="ribbon-icon"><i class="fas fa-home"></i></div>
+                <div class="ribbon-label">Home</div>
+            </div>
+            <div class="ribbon-item touch-feedback" data-target="maps">
+                <div class="ribbon-icon"><i class="fas fa-map-marked-alt"></i></div>
+                <div class="ribbon-label">Maps</div>
+            </div>
+            <div class="ribbon-item scanner-center touch-feedback" data-target="scanner">
+                <div class="ribbon-icon"><i class="fas fa-camera"></i></div>
+                <div class="ribbon-label">Scan</div>
+            </div>
+            <div class="ribbon-item touch-feedback" data-target="ar">
+                <div class="ribbon-icon"><i class="fas fa-vr-cardboard"></i></div>
+                <div class="ribbon-label">AR</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h3 class="footer-title">Sanskriti-Setu</h3>
+                        <p>Bridging heritage and technology to preserve and promote Indian cultural legacy.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h3 class="footer-title">Quick Links</h3>
+                        <ul class="footer-links">
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Contact</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3 class="footer-title">Connect With Us</h3>
+                        <ul class="footer-links">
+                            <li><a href="#">Instagram</a></li>
+                            <li><a href="#">Twitter</a></li>
+                            <li><a href="#">Facebook</a></li>
+                            <li><a href="#">YouTube</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2025 Sanskriti-Setu. All rights reserved by TheAPIcalypse.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Camera Permission Modal - UPDATED FOR MOBILE -->
+    <div class="modal hidden" id="cameraModal">
+        <div class="modal-content permission-modal">
+            <div class="modal-header">
+                <h2 class="modal-title">📷 Camera Access Required</h2>
+            </div>
+            <p style="margin-bottom: 1.5rem; color: var(--text); opacity: 0.8;">
+                Sanskriti-Setu needs camera access to scan cultural artifacts and heritage elements.
+            </p>
+            
+            <div class="permission-steps">
+                <div class="permission-step">
+                    <div class="step-number">1</div>
+                    <div>Allow camera permission when prompted by your browser</div>
+                </div>
+                <div class="permission-step">
+                    <div class="step-number">2</div>
+                    <div>Make sure you're in a well-lit area for better scanning</div>
+                </div>
+                <div class="permission-step">
+                    <div class="step-number">3</div>
+                    <div>Hold your phone steady while scanning cultural items</div>
+                </div>
+            </div>
+            
+            <button class="scan-button touch-feedback" onclick="scannerApp.initCamera()" style="margin-top: 0;">
+                Allow Camera Access
+            </button>
+            
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">
+                If you previously denied permission, you'll need to enable it in your browser settings.
+            </p>
+        </div>
+    </div>
+
+    <!-- Location Permission Modal - NEW -->
+    <div class="modal hidden" id="locationModal">
+        <div class="modal-content permission-modal">
+            <div class="modal-header">
+                <h2 class="modal-title">📍 Location Access</h2>
+            </div>
+            <p style="margin-bottom: 1.5rem; color: var(--text); opacity: 0.8;">
+                Sanskriti-Setu uses your location to show nearby cultural heritage sites and provide personalized recommendations.
+            </p>
+            
+            <div class="permission-steps">
+                <div class="permission-step">
+                    <div class="step-number">1</div>
+                    <div>Allow location access when prompted</div>
+                </div>
+                <div class="permission-step">
+                    <div class="step-number">2</div>
+                    <div>We only use your location to enhance your cultural exploration</div>
+                </div>
+                <div class="permission-step">
+                    <div class="step-number">3</div>
+                    <div>Your location data is never stored or shared</div>
+                </div>
+            </div>
+            
+            <button class="scan-button touch-feedback" onclick="enableLocationServices()" style="margin-top: 0;">
+                Allow Location Access
+            </button>
+            
+            <button class="auth-btn touch-feedback" onclick="closeLocationModal()" style="margin-top: 10px; background: transparent; color: var(--text); border: 1px solid var(--border);">
+                Skip for Now
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // API Keys Configuration
+        const CONFIG = {
+            GEMINI_API_KEY: "AIzaSyANyvyftAGbiBYCF5Z2V9W7EWTSSB2Nr5o",
+            INTERESTS: [
+                'Classical Dance', 'Folk Music', 'Traditional Crafts', 'Ancient History', 
+                'Temple Architecture', 'Textile Arts', 'Culinary Heritage', 'Festivals',
+                'Sculpture', 'Painting', 'Mythology', 'Regional Traditions'
+            ]
+        };
+
+        // Scanner Application Class - ENHANCED FOR MOBILE
+        class ScannerApp {
+            constructor() {
+                this.state = {
+                    cameraStream: null,
+                    scannedHistory: [],
+                    currentHeritage: null,
+                    culturalDatabase: this.loadCulturalDatabase(),
+                    isReadingAloud: false,
+                    currentSpeech: null,
+                    isMobile: this.detectMobile()
+                };
+            }
+
+            // Detect mobile device
+            detectMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+
+            // Initialize Scanner with mobile optimizations
+            init() {
+                this.setupScannerEventListeners();
+                
+                // Auto-init camera on mobile when page is visible
+                if (this.state.isMobile) {
+                    document.addEventListener('visibilitychange', () => {
+                        if (!document.hidden && document.getElementById('scanner').classList.contains('active')) {
+                            setTimeout(() => this.initCamera(), 500);
+                        }
+                    });
+                }
+            }
+
+            // Load cultural database from localStorage
+            loadCulturalDatabase() {
+                const savedDatabase = localStorage.getItem('sanskriti_cultural_database');
+                if (savedDatabase) {
+                    return JSON.parse(savedDatabase);
+                }
+                
+                // Default cultural database
+                return [];
+            }
+
+            // Save cultural database to localStorage
+            saveCulturalDatabase() {
+                localStorage.setItem('sanskriti_cultural_database', JSON.stringify(this.state.culturalDatabase));
+            }
+
+            // Setup scanner event listeners with mobile optimizations
+            setupScannerEventListeners() {
+                const scanButton = document.getElementById('scanButton');
+                
+                // Use touch events for mobile
+                if (this.state.isMobile) {
+                    scanButton.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.vibrate(10); // Haptic feedback
+                    });
+                    
+                    scanButton.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.captureAndScan();
+                    });
+                } else {
+                    scanButton.addEventListener('click', () => {
+                        this.captureAndScan();
+                    });
+                }
+            }
+
+            // Provide haptic feedback on mobile devices
+            vibrate(duration = 10) {
+                if (navigator.vibrate) {
+                    navigator.vibrate(duration);
+                }
+            }
+
+            // Initialize camera with mobile-specific settings
+            initCamera() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    this.showToast('Camera not supported on this device', 'error');
+                    document.getElementById('cameraModal').classList.remove('hidden');
+                    return;
+                }
+
+                // Mobile-specific camera constraints
+                const constraints = {
+                    video: { 
+                        facingMode: 'environment', // Use rear camera
+                        width: { ideal: this.state.isMobile ? 1280 : 1920 },
+                        height: { ideal: this.state.isMobile ? 720 : 1080 },
+                        frameRate: { ideal: 30 }
+                    },
+                    audio: false
+                };
+
+                // Request camera with phone-friendly settings
+                navigator.mediaDevices.getUserMedia(constraints)
+                .then((stream) => {
+                    this.state.cameraStream = stream;
+                    const video = document.getElementById('camera-preview');
+                    video.srcObject = stream;
+                    
+                    // Mobile-specific video handling
+                    video.setAttribute('playsinline', '');
+                    video.setAttribute('webkit-playsinline', '');
+                    
+                    // Handle video loading for mobile devices
+                    video.onloadedmetadata = () => {
+                        video.play().catch(e => {
+                            console.error('Error playing video:', e);
+                            this.showToast('Camera activation failed', 'error');
+                        });
+                    };
+                    
+                    // Handle orientation for mobile
+                    this.handleMobileOrientation(video);
+                    
+                    document.getElementById('cameraModal').classList.add('hidden');
+                    this.showToast('Camera activated successfully!', 'success');
+                })
+                .catch((error) => {
+                    console.error('Camera error:', error);
+                    document.getElementById('cameraModal').classList.remove('hidden');
+                    
+                    // Provide specific error messages for mobile
+                    let errorMessage = 'Failed to access camera. ';
+                    
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage += 'Please allow camera access in your browser settings.';
+                        
+                        // Additional guidance for mobile users
+                        if (this.state.isMobile) {
+                            errorMessage += ' On mobile, check your browser permissions.';
+                        }
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage += 'No camera found on this device.';
+                    } else if (error.name === 'NotSupportedError') {
+                        errorMessage += 'Camera not supported in this browser.';
+                    } else if (error.name === 'OverconstrainedError') {
+                        errorMessage += 'Camera constraints could not be satisfied. Trying with different settings.';
+                        // Try again with simpler constraints
+                        this.initCameraWithSimpleConstraints();
+                        return;
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    this.showToast(errorMessage, 'error');
+                });
+            }
+
+            // Alternative camera initialization with simpler constraints
+            initCameraWithSimpleConstraints() {
+                const simpleConstraints = {
+                    video: { 
+                        facingMode: 'environment'
+                    },
+                    audio: false
+                };
+
+                navigator.mediaDevices.getUserMedia(simpleConstraints)
+                .then((stream) => {
+                    this.state.cameraStream = stream;
+                    const video = document.getElementById('camera-preview');
+                    video.srcObject = stream;
+                    
+                    video.onloadedmetadata = () => {
+                        video.play().catch(e => {
+                            console.error('Error playing video:', e);
+                        });
+                    };
+                    
+                    document.getElementById('cameraModal').classList.add('hidden');
+                    this.showToast('Camera activated with basic settings', 'success');
+                })
+                .catch((error) => {
+                    console.error('Simple camera also failed:', error);
+                    this.showToast('Camera access completely failed', 'error');
+                });
+            }
+
+            // Handle mobile device orientation
+            handleMobileOrientation(video) {
+                if (!this.state.isMobile) return;
+                
+                const handleOrientation = () => {
+                    switch (window.orientation) {
+                        case 0:
+                            // Portrait
+                            video.style.transform = 'rotate(0deg)';
+                            break;
+                        case 90:
+                            // Landscape left
+                            video.style.transform = 'rotate(90deg)';
+                            break;
+                        case -90:
+                            // Landscape right
+                            video.style.transform = 'rotate(-90deg)';
+                            break;
+                        case 180:
+                            // Portrait upside down
+                            video.style.transform = 'rotate(180deg)';
+                            break;
+                    }
+                };
+                
+                window.addEventListener('orientationchange', handleOrientation);
+                handleOrientation(); // Initial call
+            }
+
+            // Capture and scan cultural heritage - optimized for mobile
+            async captureAndScan() {
+                // Provide haptic feedback on mobile
+                this.vibrate(20);
+                
+                // Use demo mode if API key is not properly configured
+                if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY.includes("YOUR_API_KEY")) {
+                    this.showToast('Using demo mode - configure API key for real scanning', 'info');
+                    this.demoScan();
+                    return;
+                }
+
+                if (!this.state.cameraStream) {
+                    this.showToast('Please allow camera access first', 'error');
+                    document.getElementById('cameraModal').classList.remove('hidden');
+                    return;
+                }
+
+                try {
+                    const scanButton = document.getElementById('scanButton');
+                    scanButton.classList.add('loading');
+                    scanButton.innerHTML = '<span>🔍 Scanning Cultural Heritage...</span>';
+
+                    // Capture frame
+                    const canvas = document.getElementById('captureCanvas');
+                    const context = canvas.getContext('2d');
+                    const video = document.getElementById('camera-preview');
+                    
+                    // Ensure video is ready
+                    if (video.videoWidth === 0 || video.videoHeight === 0) {
+                        throw new Error('Camera not ready. Please wait a moment and try again.');
+                    }
+                    
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const imageData = canvas.toDataURL('image/jpeg', this.state.isMobile ? 0.7 : 0.8);
+                    
+                    // Identify cultural heritage using Gemini AI
+                    const heritage = await this.identifyCulturalHeritageWithGemini(imageData);
+                    
+                    this.state.currentHeritage = heritage;
+                    this.state.scannedHistory.push({
+                        ...heritage,
+                        timestamp: new Date().toISOString(),
+                        scanId: this.generateUUID()
+                    });
+
+                    this.displayHeritageInfo(heritage);
+                    this.logScanActivity(heritage);
+                    
+                    // Success haptic feedback
+                    this.vibrate([50, 50, 50]);
+
+                } catch (error) {
+                    console.error('Error scanning cultural heritage:', error);
+                    this.showToast(error.message, 'error');
+                    
+                    // Error haptic feedback
+                    this.vibrate([100, 50, 100]);
+                } finally {
+                    const scanButton = document.getElementById('scanButton');
+                    scanButton.classList.remove('loading');
+                    scanButton.innerHTML = '<span>📷 Capture & Scan</span>';
+                }
+            }
+
+            // Demo mode for testing without API
+            async demoScan() {
+                const scanButton = document.getElementById('scanButton');
+                scanButton.classList.add('loading');
+                scanButton.innerHTML = '<span>🔍 Scanning...</span>';
+
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Use cultural database for demo
+                const randomHeritage = this.state.culturalDatabase[
+                    Math.floor(Math.random() * this.state.culturalDatabase.length)
+                ];
+                
+                this.state.currentHeritage = randomHeritage;
+                this.state.scannedHistory.push({
+                    ...randomHeritage,
+                    timestamp: new Date().toISOString(),
+                    scanId: this.generateUUID()
+                });
+
+                this.displayHeritageInfo(randomHeritage);
+                this.logScanActivity(randomHeritage);
+                this.showToast(`Identified: ${randomHeritage.name}`, 'success');
+
+                scanButton.classList.remove('loading');
+                scanButton.innerHTML = '<span>📷 Capture & Scan</span>';
+            }
+
+            // Identify cultural heritage with Gemini AI
+            async identifyCulturalHeritageWithGemini(imageData) {
+                try {
+                    const base64Data = imageData.split(',')[1];
+                    
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CONFIG.GEMINI_API_KEY}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { 
+                                        text: `Analyze this image which may be a photo of Indian cultural heritage - including dance forms, artifacts, monuments, traditional crafts, costumes, or any element of Indian culture and tradition.
+                                        
+                                        Please identify:
+                                        1. NAME: What is this cultural element called?
+                                        2. TYPE: What type of cultural heritage is it (dance, craft, monument, costume, etc.)?
+                                        3. REGION: Which Indian region/state does it belong to?
+                                        4. ERA: When did it originate or become prominent?
+                                        5. DESCRIPTION: Describe what you see and its cultural significance
+                                        6. HISTORICAL CONTEXT: What is its historical background?
+                                        7. CURRENT PRACTICE: How is it practiced or preserved today?
+                                        8. ARCHITECTURAL FEATURES: If applicable, describe architectural elements
+                                        9. SYMBOLISM: What symbolic meanings are associated with it?
+                                        10. INFLUENCE: How has it influenced Indian culture?
+                                        
+                                        Focus on Indian cultural heritage. If it's not recognizable as specific cultural heritage, describe what you see and make an educated guess about its cultural significance.
+                                        If it's clearly not related to Indian culture, say "NOT_INDIAN_CULTURE".
+                                        
+                                        Provide comprehensive, detailed information. Format your response clearly with the above categories.` 
+                                    },
+                                    {
+                                        inline_data: {
+                                            mime_type: "image/jpeg",
+                                            data: base64Data
+                                        }
+                                    }
+                                ]
+                            }],
+                            generationConfig: {
+                                temperature: 0.2,
+                                maxOutputTokens: 2000,
+                                topP: 0.8,
+                                topK: 40
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Gemini API error:', response.status, errorText);
+                        
+                        if (response.status === 400) {
+                            throw new Error('Invalid API request. Please check your configuration.');
+                        } else if (response.status === 403) {
+                            throw new Error('API key is invalid or has insufficient permissions.');
+                        } else if (response.status === 429) {
+                            throw new Error('API rate limit exceeded. Please try again later.');
+                        } else {
+                            throw new Error('AI service is temporarily unavailable. Please try again.');
+                        }
+                    }
+
+                    const data = await response.json();
+                    
+                    if (!data.candidates || !data.candidates[0]) {
+                        throw new Error('No response from AI service');
+                    }
+
+                    const responseText = data.candidates[0].content.parts[0].text;
+                    console.log('Gemini Response:', responseText);
+                    
+                    // Check if it's not Indian culture
+                    if (responseText.includes('NOT_INDIAN_CULTURE') || 
+                        responseText.toLowerCase().includes('not indian culture') ||
+                        responseText.toLowerCase().includes('cannot identify') ||
+                        responseText.toLowerCase().includes('unable to recognize')) {
+                        throw new Error('This does not appear to be recognizable Indian cultural heritage. Please try with a clear photo of dance, artifacts, monuments, or traditional elements.');
+                    }
+                    
+                    // Parse the response
+                    return this.parseGeminiResponse(responseText);
+                    
+                } catch (error) {
+                    console.error('Gemini AI Error:', error);
+                    if (error.message.includes('AI service') || error.message.includes('API')) {
+                        throw error;
+                    }
+                    throw new Error('Failed to identify cultural heritage. Please ensure you have a clear photo and try again.');
+                }
+            }
+
+            // Parse Gemini response for cultural heritage - UPDATED
+            parseGeminiResponse(responseText) {
+                const lines = responseText.split('\n').filter(line => line.trim());
+                
+                // Extract information using multiple methods
+                const heritage = {
+                    id: this.generateUUID(),
+                    name: this.extractField(lines, ['NAME:', 'CULTURAL ELEMENT:', 'TITLE:']) || 'Unidentified Cultural Heritage',
+                    type: this.extractField(lines, ['TYPE:', 'CATEGORY:', 'HERITAGE TYPE:']) || 'Cultural Heritage',
+                    region: this.extractField(lines, ['REGION:', 'STATE:', 'ORIGIN:']) || 'Various Regions',
+                    era: this.extractField(lines, ['ERA:', 'PERIOD:', 'TIME:', 'ORIGIN DATE:']) || 'Various Periods',
+                    description: this.cleanText(this.extractDescription(responseText)),
+                    significance: this.cleanText(this.extractField(lines, ['HISTORICAL CONTEXT:', 'SIGNIFICANCE:', 'BACKGROUND:', 'HISTORICAL SIGNIFICANCE:']) || 'Important cultural and historical significance'),
+                    currentPractice: this.cleanText(this.extractField(lines, ['CURRENT PRACTICE:', 'PRESERVATION:', 'MODERN USAGE:', 'CONTEMPORARY PRACTICE:']) || 'Practiced and preserved across India'),
+                    architecturalFeatures: this.cleanText(this.extractField(lines, ['ARCHITECTURAL FEATURES:', 'ARCHITECTURE:', 'DESIGN ELEMENTS:']) || 'Not applicable'),
+                    symbolism: this.cleanText(this.extractField(lines, ['SYMBOLISM:', 'MEANING:', 'SYMBOLIC SIGNIFICANCE:']) || 'Rich symbolic meaning in Indian culture'),
+                    influence: this.cleanText(this.extractField(lines, ['INFLUENCE:', 'CULTURAL IMPACT:', 'LEGACY:']) || 'Significant influence on Indian cultural traditions'),
+                    scanTime: new Date().toISOString(),
+                    confidence: 'high'
+                };
+
+                // If we couldn't extract specific fields, use the first meaningful lines
+                if (heritage.name === 'Unidentified Cultural Heritage') {
+                    const meaningfulLines = lines.filter(line => 
+                        !line.includes(':') && 
+                        line.length > 10 && 
+                        !line.toLowerCase().includes('analyze') &&
+                        !line.toLowerCase().includes('identify') &&
+                        !line.toLowerCase().includes('please')
+                    );
+                    if (meaningfulLines.length > 0) {
+                        heritage.name = this.cleanText(meaningfulLines[0].substring(0, 50));
+                        heritage.confidence = 'medium';
+                    }
+                }
+
+                return heritage;
+            }
+
+            extractField(lines, keywords) {
+                for (const keyword of keywords) {
+                    const line = lines.find(l => l.includes(keyword));
+                    if (line) {
+                        const value = line.split(keyword)[1]?.trim();
+                        if (value && value.length > 0) {
+                            return value;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            extractDescription(responseText) {
+                // Find the description section
+                const lines = responseText.split('\n');
+                const descIndex = lines.findIndex(line => 
+                    line.includes('DESCRIPTION:') || 
+                    line.includes('DESCRIBE:') ||
+                    line.toLowerCase().includes('this is') ||
+                    line.toLowerCase().includes('it shows')
+                );
+                
+                if (descIndex !== -1) {
+                    let description = '';
+                    // Take the description line and next few lines
+                    for (let i = descIndex; i < Math.min(descIndex + 6, lines.length); i++) {
+                        const cleanLine = lines[i].replace(/^(DESCRIPTION:|DESCRIBE:)/, '').trim();
+                        if (cleanLine) {
+                            description += cleanLine + ' ';
+                        }
+                    }
+                    return description.trim() || 'A significant element of Indian cultural heritage with deep historical roots.';
+                }
+                
+                // Fallback: use first meaningful paragraph
+                const paragraphs = responseText.split('\n\n');
+                for (const paragraph of paragraphs) {
+                    if (paragraph.length > 50 && !paragraph.includes('NAME') && !paragraph.includes('TYPE:')) {
+                        return paragraph.substring(0, 300) + '...';
+                    }
+                }
+                
+                return 'An important element of Indian cultural heritage identified through visual analysis.';
+            }
+
+            // Display heritage info - UPDATED
+            displayHeritageInfo(heritage) {
+                const container = document.getElementById('heritageInfo');
+                
+                // Clean up the text by removing asterisks and other unwanted characters
+                const cleanDescription = this.cleanText(heritage.description);
+                const cleanSignificance = this.cleanText(heritage.significance);
+                const cleanCurrentPractice = this.cleanText(heritage.currentPractice);
+                const cleanArchitecturalFeatures = this.cleanText(heritage.architecturalFeatures);
+                const cleanSymbolism = this.cleanText(heritage.symbolism);
+                const cleanInfluence = this.cleanText(heritage.influence);
+                
+                container.innerHTML = `
+                    <div class="heritage-header">
+                        <h2 class="heritage-name">${heritage.name}</h2>
+                        <div class="heritage-meta">
+                            <span class="meta-tag">${heritage.type}</span>
+                            <span class="meta-tag">${heritage.region}</span>
+                            <span class="meta-tag">${heritage.era}</span>
+                            ${heritage.confidence === 'medium' ? `<span class="meta-tag" style="background: #F59E0B;">Tentative Identification</span>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="heritage-description">
+                        ${cleanDescription}
+                    </div>
+                    
+                    <div class="heritage-details">
+                        <div class="detail-section">
+                            <strong>Historical Significance:</strong> ${cleanSignificance}
+                        </div>
+                        ${cleanArchitecturalFeatures !== 'Not applicable' ? `
+                        <div class="detail-section">
+                            <strong>Architectural Features:</strong> ${cleanArchitecturalFeatures}
+                        </div>
+                        ` : ''}
+                        <div class="detail-section">
+                            <strong>Symbolism:</strong> ${cleanSymbolism}
+                        </div>
+                        <div class="detail-section">
+                            <strong>Cultural Influence:</strong> ${cleanInfluence}
+                        </div>
+                        <div class="detail-section">
+                            <strong>Current Practice:</strong> ${cleanCurrentPractice}
+                        </div>
+                    </div>
+                    
+                    <div class="heritage-actions">
+                        <button class="action-btn read-aloud-btn touch-feedback" onclick="scannerApp.readAloud('${this.escapeText(heritage.name)}', '${this.escapeText(cleanDescription)}', '${this.escapeText(cleanSignificance)}', '${this.escapeText(cleanCurrentPractice)}')">
+                            🔊 Read Aloud
+                        </button>
+                        <button class="action-btn stop-aloud-btn touch-feedback" onclick="scannerApp.stopReadAloud()" style="display: none;" id="stopAloudBtn">
+                            ⏹️ Stop
+                        </button>
+                        <button class="action-btn save-btn touch-feedback" onclick="scannerApp.saveHeritage('${heritage.id}')">
+                            💾 Save to Favorites
+                        </button>
+                    </div>
+                `;
+                
+                container.classList.remove('hidden');
+                container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Clean text by removing unwanted characters - NEW METHOD
+            cleanText(text) {
+                if (!text) return '';
+                
+                // Remove asterisks, hashtags, and other unwanted characters
+                let cleaned = text.replace(/[*#_~`]/g, '');
+                
+                // Ensure proper spacing around punctuation
+                cleaned = cleaned.replace(/\s+\./g, '.');
+                cleaned = cleaned.replace(/\s+,/g, ',');
+                cleaned = cleaned.replace(/\s+:/g, ':');
+                cleaned = cleaned.replace(/\s+;/g, ';');
+                
+                // Remove extra spaces
+                cleaned = cleaned.replace(/\s+/g, ' ').trim();
+                
+                // Ensure proper sentence capitalization
+                cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+                
+                return cleaned;
+            }
+
+            // Text-to-speech - UPDATED
+            async readAloud(title, description, significance, currentPractice) {
+                try {
+                    const fullText = `${title}. ${description}. Historical Significance: ${significance}. Current Practice: ${currentPractice}`;
+                    
+                    if (!('speechSynthesis' in window)) {
+                        this.showToast('Text-to-speech not supported in your browser', 'error');
+                        return;
+                    }
+                    
+                    // Stop any current speech
+                    this.stopReadAloud();
+                    
+                    const speech = new SpeechSynthesisUtterance(fullText);
+                    speech.rate = 0.8;
+                    speech.pitch = 1;
+                    speech.volume = 0.8;
+                    
+                    // Get available voices and try to use a natural one
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        // Prefer female voices for better clarity
+                        const femaleVoice = voices.find(voice => 
+                            voice.name.includes('Female') || voice.name.includes('female')
+                        );
+                        if (femaleVoice) {
+                            speech.voice = femaleVoice;
+                        } else {
+                            speech.voice = voices[0];
+                        }
+                    }
+                    
+                    speech.onstart = () => {
+                        this.state.isReadingAloud = true;
+                        this.state.currentSpeech = speech;
+                        this.showToast('Reading cultural heritage information...', 'success');
+                        document.getElementById('stopAloudBtn').style.display = 'flex';
+                    };
+                    
+                    speech.onend = () => {
+                        this.state.isReadingAloud = false;
+                        this.state.currentSpeech = null;
+                        document.getElementById('stopAloudBtn').style.display = 'none';
+                    };
+                    
+                    speech.onerror = (event) => {
+                        console.error('Speech synthesis error:', event);
+                        this.state.isReadingAloud = false;
+                        this.state.currentSpeech = null;
+                        document.getElementById('stopAloudBtn').style.display = 'none';
+                        this.showToast('Audio playback failed', 'error');
+                    };
+                    
+                    window.speechSynthesis.speak(speech);
+                    
+                } catch (error) {
+                    console.error('TTS Error:', error);
+                    this.showToast('Audio playback failed', 'error');
+                }
+            }
+
+            // Stop read aloud - NEW METHOD
+            stopReadAloud() {
+                if (this.state.isReadingAloud && this.state.currentSpeech) {
+                    window.speechSynthesis.cancel();
+                    this.state.isReadingAloud = false;
+                    this.state.currentSpeech = null;
+                    document.getElementById('stopAloudBtn').style.display = 'none';
+                    this.showToast('Reading stopped', 'info');
+                }
+            }
+
+            escapeText(text) {
+                return text.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, ' ');
+            }
+
+            // Save heritage
+            saveHeritage(heritageId) {
+                const favorites = JSON.parse(localStorage.getItem('sanskriti_favorites') || '[]');
+                if (!favorites.includes(heritageId)) {
+                    favorites.push(heritageId);
+                    localStorage.setItem('sanskriti_favorites', JSON.stringify(favorites));
+                    this.showToast('Cultural heritage saved to favorites!', 'success');
+                } else {
+                    this.showToast('Already in favorites', 'info');
+                }
+            }
+
+            // Analytics
+            logScanActivity(heritage) {
+                const activity = {
+                    heritageId: heritage.id,
+                    heritageName: heritage.name,
+                    type: heritage.type,
+                    region: heritage.region,
+                    timestamp: new Date().toISOString()
+                };
+
+                const analytics = JSON.parse(localStorage.getItem('sanskriti_analytics') || '[]');
+                analytics.push(activity);
+                localStorage.setItem('sanskriti_analytics', JSON.stringify(analytics));
+                localStorage.setItem('sanskriti_scan_history', JSON.stringify(this.state.scannedHistory));
+            }
+
+            // Utility functions
+            generateUUID() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    const r = Math.random() * 16 | 0;
+                    const v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+
+            showToast(message, type = 'info') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.style.display = 'block';
+                
+                if (type === 'success') {
+                    toast.style.background = '#10B981';
+                    this.vibrate(50); // Success feedback
+                } else if (type === 'error') {
+                    toast.style.background = '#EF4444';
+                    this.vibrate([100, 50, 100]); // Error pattern
+                } else if (type === 'warning') {
+                    toast.style.background = '#F59E0B';
+                } else {
+                    toast.style.background = '#6B7280';
+                }
+                
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, this.state.isMobile ? 3000 : 4000);
+            }
+        }
+
+        // Initialize scanner app
+        let scannerApp;
+
+        // NEW LOCATION PERMISSION FUNCTIONS
+        function requestLocationPermission() {
+            if (!navigator.geolocation) {
+                showToast('Geolocation is not supported on this device', 'error');
+                return;
+            }
+            
+            document.getElementById('locationModal').classList.remove('hidden');
+        }
+
+        function enableLocationServices() {
+            document.getElementById('locationModal').classList.add('hidden');
+            
+            if (!navigator.geolocation) {
+                showToast('Geolocation not supported', 'error');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Success - location services are enabled
+                    showToast('Location access granted', 'success');
+                    
+                    // You can now use the position in your maps functionality
+                    if (window.map && position) {
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        // Center map on user location
+                        map.setView([userLocation.lat, userLocation.lng], 12);
+                        
+                        // Add user marker
+                        const userIcon = L.divIcon({
+                            className: 'custom-marker',
+                            html: '<i class="fas fa-user" style="color: white;"></i>',
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15]
+                        });
+
+                        L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+                            .addTo(map)
+                            .bindPopup('Your Current Location')
+                            .openPopup();
+                    }
+                },
+                (error) => {
+                    let errorMessage = 'Location access denied. ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += "Please enable location in your browser settings to use this feature.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += "Location information is unavailable.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += "Location request timed out.";
+                            break;
+                        default:
+                            errorMessage += "An unknown error occurred.";
+                            break;
+                    }
+                    showToast(errorMessage, 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+
+        function closeLocationModal() {
+            document.getElementById('locationModal').classList.add('hidden');
+            showToast('You can enable location later in settings', 'info');
+        }
+
+        // Authentication State Management
+        let currentUser = null;
+
+        // DOM Elements for Auth
+        const welcomeSection = document.getElementById('welcome');
+        const loginSection = document.getElementById('login');
+        const signupSection = document.getElementById('signup');
+        const mainApp = document.getElementById('main-app');
+        const getStartedBtn = document.getElementById('get-started-btn');
+        const showLoginBtn = document.getElementById('show-login');
+        const showSignupBtn = document.getElementById('show-signup');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        const googleSignupBtn = document.getElementById('google-signup-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // Show/Hide Sections
+        function showSection(section) {
+            // Hide all sections
+            welcomeSection.classList.remove('active');
+            loginSection.classList.remove('active');
+            signupSection.classList.remove('active');
+            mainApp.style.display = 'none';
+            
+            // Show target section
+            if (section === 'welcome') {
+                welcomeSection.classList.add('active');
+            } else if (section === 'login') {
+                loginSection.classList.add('active');
+            } else if (section === 'signup') {
+                signupSection.classList.add('active');
+            } else if (section === 'app') {
+                mainApp.style.display = 'block';
+            }
+        }
+
+        // Check if user is already logged in
+        function checkAuthStatus() {
+            const token = localStorage.getItem('sanskriti_token');
+            const user = localStorage.getItem('sanskriti_user');
+            
+            if (token && user) {
+                currentUser = JSON.parse(user);
+                showSection('app');
+            } else {
+                showSection('welcome');
+            }
+        }
+
+        // Form Validation
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function validatePassword(password) {
+            return password.length >= 6;
+        }
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = 'none';
+        }
+
+        // Event Listeners for Auth
+        getStartedBtn.addEventListener('click', () => {
+            showSection('login');
+        });
+
+        showSignupBtn.addEventListener('click', () => {
+            showSection('signup');
+        });
+
+        showLoginBtn.addEventListener('click', () => {
+            showSection('login');
+        });
+
+        // Login Form Submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Clear previous errors
+            hideError('login-email-error');
+            hideError('login-password-error');
+            
+            // Validate inputs
+            let isValid = true;
+            
+            if (!validateEmail(email)) {
+                showError('login-email-error', 'Please enter a valid email address');
+                isValid = false;
+            }
+            
+            if (!validatePassword(password)) {
+                showError('login-password-error', 'Password must be at least 6 characters long');
+                isValid = false;
+            }
+            
+            if (isValid) {
+                try {
+                    // Simulate API call
+                    const demoUser = {
+                        id: 'user_123',
+                        username: email.split('@')[0],
+                        email: email,
+                        profile: {
+                            fullName: 'Demo User',
+                            avatar: null,
+                            location: null,
+                            language: 'English'
+                        },
+                        gameStats: {
+                            points: 0,
+                            level: 1,
+                            completedTasks: []
+                        }
+                    };
+                    
+                    // Store token and user data
+                    localStorage.setItem('sanskriti_token', 'demo_jwt_token');
+                    localStorage.setItem('sanskriti_user', JSON.stringify(demoUser));
+                    currentUser = demoUser;
+                    
+                    // Show main app
+                    showSection('app');
+                    
+                } catch (error) {
+                    showError('login-password-error', 'Login failed. Please try again.');
+                }
+            }
+        });
+
+        // Signup Form Submission
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+            
+            // Clear previous errors
+            hideError('signup-name-error');
+            hideError('signup-email-error');
+            hideError('signup-password-error');
+            hideError('signup-confirm-password-error');
+            
+            // Validate inputs
+            let isValid = true;
+            
+            if (name.trim().length < 2) {
+                showError('signup-name-error', 'Please enter your full name');
+                isValid = false;
+            }
+            
+            if (!validateEmail(email)) {
+                showError('signup-email-error', 'Please enter a valid email address');
+                isValid = false;
+            }
+            
+            if (!validatePassword(password)) {
+                showError('signup-password-error', 'Password must be at least 6 characters long');
+                isValid = false;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('signup-confirm-password-error', 'Passwords do not match');
+                isValid = false;
+            }
+            
+            if (isValid) {
+                try {
+                    // Simulate API call
+                    const demoUser = {
+                        id: 'user_' + Date.now(),
+                        username: name.toLowerCase().replace(/\s+/g, ''),
+                        email: email,
+                        profile: {
+                            fullName: name,
+                            avatar: null,
+                            location: null,
+                            language: 'English'
+                        },
+                        gameStats: {
+                            points: 0,
+                            level: 1,
+                            completedTasks: []
+                        }
+                    };
+                    
+                    // Store token and user data
+                    localStorage.setItem('sanskriti_token', 'demo_jwt_token');
+                    localStorage.setItem('sanskriti_user', JSON.stringify(demoUser));
+                    currentUser = demoUser;
+                    
+                    // Show main app
+                    showSection('app');
+                    
+                } catch (error) {
+                    showError('signup-email-error', 'Registration failed. Please try again.');
+                }
+            }
+        });
+
+        // Google Authentication (Demo)
+        function handleGoogleAuth() {
+            const demoUser = {
+                id: 'google_user_123',
+                username: 'googleuser',
+                email: 'user@gmail.com',
+                profile: {
+                    fullName: 'Google User',
+                    avatar: null,
+                    location: null,
+                    language: 'English'
+                },
+                gameStats: {
+                    points: 0,
+                    level: 1,
+                    completedTasks: []
+                }
+            };
+            
+            localStorage.setItem('sanskriti_token', 'demo_google_token');
+            localStorage.setItem('sanskriti_user', JSON.stringify(demoUser));
+            currentUser = demoUser;
+            
+            showSection('app');
+        }
+
+        googleLoginBtn.addEventListener('click', handleGoogleAuth);
+        googleSignupBtn.addEventListener('click', handleGoogleAuth);
+
+        // Logout
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('sanskriti_token');
+            localStorage.removeItem('sanskriti_user');
+            currentUser = null;
+            showSection('welcome');
+        });
+
+        // Initialize
+        checkAuthStatus();
+
+        // MAIN APP FUNCTIONALITY
+        // DOM Elements
+        const hamburger = document.getElementById('hamburger');
+        const sideDrawer = document.getElementById('side-drawer');
+        const drawerClose = document.getElementById('drawer-close');
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const navItems = document.querySelectorAll('.nav-item');
+        const ribbonItems = document.querySelectorAll('.ribbon-item');
+        const pageSections = document.querySelectorAll('.page-section');
+        const logoHome = document.getElementById('logo-home');
+
+        // Toggle Side Drawer
+        hamburger.addEventListener('click', () => {
+            sideDrawer.classList.add('active');
+        });
+
+        drawerClose.addEventListener('click', () => {
+            sideDrawer.classList.remove('active');
+        });
+
+        // Logo home button
+        logoHome.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateToPage('home');
+        });
+
+        // Toggle Theme
+        themeToggle.addEventListener('click', () => {
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+            } else {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+            }
+        });
+
+        // Navigation between pages
+        function navigateToPage(target) {
+            // Hide all sections
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show target section
+            document.getElementById(target).classList.add('active');
+            
+            // Update active states
+            navItems.forEach(item => {
+                if (item.getAttribute('data-target') === target) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            ribbonItems.forEach(item => {
+                if (item.getAttribute('data-target') === target) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Close drawer if open
+            sideDrawer.classList.remove('active');
+            
+            // Initialize scanner when navigating to scanner page
+            if (target === 'scanner') {
+                if (!scannerApp) {
+                    scannerApp = new ScannerApp();
+                    scannerApp.init();
+                } else {
+                    // Reinitialize camera if it was stopped
+                    if (!scannerApp.state.cameraStream) {
+                        setTimeout(() => scannerApp.initCamera(), 300);
+                    }
+                }
+            }
+            
+            // Request location permission when navigating to maps
+            if (target === 'maps') {
+                // Small delay to let the map initialize first
+                setTimeout(() => {
+                    if (!navigator.geolocation) return;
+                    
+                    // Check if we already have permission
+                    navigator.geolocation.getCurrentPosition(
+                        () => { /* We have permission */ },
+                        () => { 
+                            // We don't have permission, show modal after a delay
+                            setTimeout(() => requestLocationPermission(), 1000);
+                        },
+                        { timeout: 100 }
+                    );
+                }, 500);
+            }
+            
+            // Provide haptic feedback on mobile navigation
+            if (scannerApp && scannerApp.state.isMobile) {
+                scannerApp.vibrate(10);
+            }
+        }
+
+        // Add event listeners for navigation
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                navigateToPage(target);
+            });
+        });
+
+        ribbonItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                navigateToPage(target);
+            });
+        });
+
+        // Enhanced getLocationBtn event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            const getLocationBtn = document.getElementById('get-location');
+            if (getLocationBtn) {
+                getLocationBtn.addEventListener('click', () => {
+                    requestLocationPermission();
+                });
+            }
+        });
+
+        // Merch navigation from side drawer
+        document.querySelector('.nav-to-merch').addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateToPage('merch');
+        });
+
+        // Add interactive elements
+        document.querySelectorAll('.feed-card, .site-card, .ar-frame, .merch-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            });
+        });
+
+        // COMPREHENSIVE CULTURAL HERITAGE MAP FUNCTIONALITY
+        // Map variables
+        let map;
+        let userLocation = null;
+        let markers = [];
+
+        // Initialize map
+        function initMap() {
+            console.log("Initializing map...");
+            
+            // Create map centered on India
+            map = L.map('heritage-map').setView([20.5937, 78.9629], 5);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            // Setup event listeners
+            setupEventListeners();
+
+            console.log("Map initialized successfully!");
+        }
+
+        // Add marker to map
+        function addMarker(site) {
+            const iconColor = getColorByType(site.type);
+            const iconHtml = getIconByType(site.type);
+            
+            const marker = L.marker([site.lat, site.lng], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background: ${iconColor}; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${iconHtml}</div>`,
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 17]
+                })
+            }).addTo(map);
+
+            // Add popup
+            marker.bindPopup(`
+                <div style="min-width: 250px;">
+                    <h3 style="color: var(--accent); margin-bottom: 10px;">${getIconByType(site.type)} ${site.name}</h3>
+                    <p><strong>Type:</strong> ${site.type}</p>
+                    <p><strong>Status:</strong> ${site.status}</p>
+                    <p>${site.description}</p>
+                    <div style="margin-top: 10px; padding: 8px; background: var(--secondary); border-radius: 4px;">
+                        <strong>📍 Location:</strong><br>
+                        Latitude: ${site.lat.toFixed(4)}<br>
+                        Longitude: ${site.lng.toFixed(4)}
+                    </div>
+                    <button class="action-btn read-aloud-btn touch-feedback" style="margin-top: 10px; width: 100%;" onclick="getLocationDetails(${site.lat}, ${site.lng}, '${site.name}')">
+                        🔍 Get Detailed Info
+                    </button>
+                </div>
+            `);
+
+            marker.on('click', function() {
+                showSiteDetails(site.name);
+            });
+
+            markers.push(marker);
+        }
+
+        // Clear all markers
+        function clearMarkers() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+        }
+
+        // Get color by type
+        function getColorByType(type) {
+            const colors = {
+                temple: '#e74c3c',
+                fort: '#3498db',
+                monument: '#2ecc71',
+                palace: '#9b59b6',
+                cultural_site: '#f39c12',
+                mosque: '#1abc9c',
+                church: '#e67e22',
+                gurudwara: '#f1c40f',
+                museum: '#8e44ad',
+                stepwell: '#3498db',
+                cave: '#7f8c8d'
+            };
+            return colors[type] || '#8b4513';
+        }
+
+        // Get icon by type
+        function getIconByType(type) {
+            const icons = {
+                temple: '🛕',
+                fort: '🏰',
+                monument: '🏛️',
+                palace: '👑',
+                cultural_site: '🎨',
+                mosque: '🕌',
+                church: '⛪',
+                gurudwara: '🕯️',
+                museum: '🏛️',
+                stepwell: '💧',
+                cave: '🕳️'
+            };
+            return icons[type] || '📍';
+        }
+
+        // Show site details
+        function showSiteDetails(siteName) {
+            const site = heritageSites.find(s => s.name === siteName);
+            if (!site) return;
+
+            const siteInfo = document.getElementById('site-info');
+            const distance = userLocation ? calculateDistance(userLocation.lat, userLocation.lng, site.lat, site.lng) : null;
+            
+            siteInfo.innerHTML = `
+                <div style="background: var(--secondary); padding: 15px; border-radius: 8px; border: 1px solid var(--accent);">
+                    <h2 style="color: var(--accent); margin-bottom: 10px;">${getIconByType(site.type)} ${site.name}</h2>
+                    <p><strong>Type:</strong> ${site.type}</p>
+                    <p><strong>Status:</strong> <span style="color: ${site.status === 'endangered' ? '#e74c3c' : '#27ae60'}">${site.status}</span></p>
+                    <p>${site.description}</p>
+                    ${distance ? `<p><strong>Distance from you:</strong> ${distance.toFixed(1)} km</p>` : ''}
+                    <div style="margin-top: 10px; font-size: 12px; color: var(--text); opacity: 0.8;">
+                        <strong>Coordinates:</strong> ${site.lat.toFixed(4)}, ${site.lng.toFixed(4)}
+                    </div>
+                    <button class="action-btn read-aloud-btn touch-feedback" style="margin-top: 10px; width: 100%;" onclick="getLocationDetails(${site.lat}, ${site.lng}, '${site.name}')">
+                        🔍 Get Detailed Info from AI
+                    </button>
+                </div>
+            `;
+
+            // Center map on the site
+            map.setView([site.lat, site.lng], 12);
+        }
+
+        // Get detailed information about a location using Gemini AI
+        async function getLocationDetails(lat, lng, name) {
+            try {
+                showToast('Getting detailed information from AI...', 'info');
+                
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CONFIG.GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { 
+                                    text: `Provide comprehensive information about the cultural heritage site: ${name} located at coordinates ${lat}, ${lng} in India.
+                                    
+                                    Please include:
+                                    1. HISTORICAL BACKGROUND: When was it built/established and by whom?
+                                    2. ARCHITECTURAL STYLE: What architectural style does it represent?
+                                    3. CULTURAL SIGNIFICANCE: Why is it important to Indian culture?
+                                    4. KEY FEATURES: What are the notable architectural or cultural elements?
+                                    5. PRESERVATION STATUS: What is its current condition and preservation efforts?
+                                    6. VISITOR INFORMATION: What should visitors know about visiting?
+                                    7. LOCAL TRADITIONS: Any associated festivals, rituals, or traditions?
+                                    8. UNESCO STATUS: Is it a UNESCO World Heritage site?
+                                    9. ARTISTIC ELEMENTS: Notable sculptures, paintings, or artistic works
+                                    10. MYTHOLOGICAL CONNECTIONS: Any mythological stories associated with it
+                                    
+                                    Provide detailed, accurate information. If you're not certain about specific details, indicate that.` 
+                                }
+                            ]
+                        }],
+                        generationConfig: {
+                            temperature: 0.2,
+                            maxOutputTokens: 2500,
+                            topP: 0.8,
+                            topK: 40
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get location details from AI');
+                }
+
+                const data = await response.json();
+                
+                if (!data.candidates || !data.candidates[0]) {
+                    throw new Error('No response from AI service');
+                }
+
+                const responseText = data.candidates[0].content.parts[0].text;
+                
+                // Display the detailed information
+                const siteInfo = document.getElementById('site-info');
+                siteInfo.innerHTML = `
+                    <div style="background: var(--secondary); padding: 15px; border-radius: 8px; border: 1px solid var(--accent); max-height: 400px; overflow-y: auto;">
+                        <h2 style="color: var(--accent); margin-bottom: 10px;">${getIconByType('monument')} ${name} - Detailed Information</h2>
+                        <div style="white-space: pre-wrap; line-height: 1.6;">${responseText}</div>
+                        <button class="action-btn save-btn touch-feedback" style="margin-top: 10px; width: 100%;" onclick="saveLocationInfo('${name}', '${responseText.replace(/'/g, "\\'")}')">
+                            💾 Save This Information
+                        </button>
+                    </div>
+                `;
+                
+                showToast('Detailed information loaded successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error getting location details:', error);
+                showToast('Failed to get detailed information. Please try again.', 'error');
+            }
+        }
+
+        // Save location information
+        function saveLocationInfo(name, info) {
+            const savedLocations = JSON.parse(localStorage.getItem('sanskriti_saved_locations') || '[]');
+            savedLocations.push({
+                name: name,
+                info: info,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('sanskriti_saved_locations', JSON.stringify(savedLocations));
+            showToast('Location information saved!', 'success');
+        }
+
+        // Calculate distance between coordinates
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Update statistics
+        function updateStatistics(sites) {
+            const totalSites = sites.length;
+            const nearbySites = userLocation ? sites.filter(site => {
+                const distance = calculateDistance(userLocation.lat, userLocation.lng, site.lat, site.lng);
+                const radius = parseInt(document.getElementById('radius-filter').value);
+                return distance <= radius;
+            }).length : totalSites;
+            
+            const templesCount = sites.filter(site => site.type === 'temple').length;
+            const fortsCount = sites.filter(site => site.type === 'fort').length;
+
+            document.getElementById('total-sites').textContent = totalSites;
+            document.getElementById('nearby-sites').textContent = nearbySites;
+            document.getElementById('temples-count').textContent = templesCount;
+            document.getElementById('forts-count').textContent = fortsCount;
+        }
+
+        // Update site list
+        function updateSiteList(sites) {
+            const sitesList = document.getElementById('cultural-sites-list');
+            
+            if (sites.length === 0) {
+                sitesList.innerHTML = '<p>No cultural sites found matching your criteria.</p>';
+                return;
+            }
+
+            let html = '<h3>🎯 Cultural Heritage Sites (' + sites.length + ')</h3>';
+            
+            sites.forEach(site => {
+                const distance = userLocation ? calculateDistance(userLocation.lat, userLocation.lng, site.lat, site.lng) : null;
+                
+                html += `
+                    <div class="site-card touch-feedback" onclick="showSiteDetails('${site.name}')">
+                        <div class="site-title">${getIconByType(site.type)} ${site.name}</div>
+                        <p>${site.description}</p>
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                            <span style="background: ${getColorByType(site.type)}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
+                                ${site.type}
+                            </span>
+                            ${distance ? `<span class="site-distance">${distance.toFixed(1)} km away</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            sitesList.innerHTML = html;
+        }
+
+        // Find nearby sites based on user location
+        function findNearbySites() {
+            if (!userLocation) return [];
+
+            const radius = parseInt(document.getElementById('radius-filter').value);
+            const category = document.getElementById('category-filter').value;
+            
+            let filteredSites = heritageSites.filter(site => {
+                const distance = calculateDistance(userLocation.lat, userLocation.lng, site.lat, site.lng);
+                return distance <= radius;
+            });
+
+            // Filter by category if not "all"
+            if (category !== 'all') {
+                filteredSites = filteredSites.filter(site => site.type === category);
+            }
+
+            // Sort by distance
+            filteredSites.sort((a, b) => {
+                const distA = calculateDistance(userLocation.lat, userLocation.lng, a.lat, a.lng);
+                const distB = calculateDistance(userLocation.lat, userLocation.lng, b.lat, b.lng);
+                return distA - distB;
+            });
+
+            return filteredSites;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Get location button
+            document.getElementById('get-location').addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    this.innerHTML = '📍 Locating...';
+                    this.disabled = true;
+
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            userLocation = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+
+                            // Add user marker
+                            const userMarker = L.marker([userLocation.lat, userLocation.lng], {
+                                icon: L.divIcon({
+                                    className: 'custom-marker',
+                                    html: '<div style="background: #27ae60; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">📍</div>',
+                                    iconSize: [30, 30],
+                                    iconAnchor: [15, 15]
+                                })
+                            }).addTo(map).bindPopup('Your Current Location');
+
+                            // Center map on user location
+                            map.setView([userLocation.lat, userLocation.lng], 10);
+
+                            // Find and display nearby sites
+                            const nearbySites = findNearbySites();
+                            clearMarkers();
+                            nearbySites.forEach(site => addMarker(site));
+                            updateSiteList(nearbySites);
+                            updateStatistics(nearbySites);
+
+                            document.getElementById('get-location').innerHTML = '📍 Use My Location';
+                            document.getElementById('get-location').disabled = false;
+
+                            // Update site info
+                            document.getElementById('site-info').innerHTML = `
+                                <h3>📍 Nearby Cultural Sites</h3>
+                                <p>Found ${nearbySites.length} cultural heritage sites within ${document.getElementById('radius-filter').value} km radius</p>
+                            `;
+                        },
+                        function(error) {
+                            alert('Unable to get your location. Please ensure location services are enabled.');
+                            document.getElementById('get-location').innerHTML = '📍 Use My Location';
+                            document.getElementById('get-location').disabled = false;
+                        }
+                    );
+                } else {
+                    alert('Geolocation is not supported by your browser.');
+                }
+            });
+
+            // Show all sites button
+            document.getElementById('show-all-sites').addEventListener('click', function() {
+                // Load a few major sites for demonstration
+                const majorSites = [
+                    {
+                        name: "Taj Mahal, Agra",
+                        lat: 27.1751,
+                        lng: 78.0421,
+                        type: "monument",
+                        description: "Iconic white marble mausoleum, UNESCO World Heritage Site",
+                        status: "preserved"
+                    },
+                    {
+                        name: "Golden Temple, Amritsar",
+                        lat: 31.6200,
+                        lng: 74.8765,
+                        type: "gurudwara",
+                        description: "Most sacred shrine of Sikhism",
+                        status: "preserved"
+                    },
+                    {
+                        name: "Red Fort, Delhi",
+                        lat: 28.6562,
+                        lng: 77.2410,
+                        type: "fort",
+                        description: "Historic fort that served as main residence of Mughal Emperors",
+                        status: "preserved"
+                    }
+                ];
+                
+                clearMarkers();
+                majorSites.forEach(site => addMarker(site));
+                updateSiteList(majorSites);
+                updateStatistics(majorSites);
+                map.setView([20.5937, 78.9629], 5);
+                document.getElementById('site-info').innerHTML = '<h3>🏛️ Major Indian Cultural Heritage Sites</h3><p>Showing major cultural heritage locations across India</p>';
+            });
+
+            // Category filter
+            document.getElementById('category-filter').addEventListener('change', function() {
+                const category = this.value;
+                if (category === 'all') {
+                    if (userLocation) {
+                        const nearbySites = findNearbySites();
+                        clearMarkers();
+                        nearbySites.forEach(site => addMarker(site));
+                        updateSiteList(nearbySites);
+                        updateStatistics(nearbySites);
+                    } else {
+                        document.getElementById('show-all-sites').click();
+                    }
+                } else {
+                    // For demo purposes, we'll just show a message
+                    document.getElementById('site-info').innerHTML = `
+                        <h3>🔍 Search for ${category} Sites</h3>
+                        <p>Use the search box to find specific ${category} sites or click "Show All India" to see major sites.</p>
+                    `;
+                    clearMarkers();
+                    updateSiteList([]);
+                    updateStatistics([]);
+                }
+            });
+
+            // Radius filter
+            document.getElementById('radius-filter').addEventListener('change', function() {
+                if (userLocation) {
+                    const nearbySites = findNearbySites();
+                    clearMarkers();
+                    nearbySites.forEach(site => addMarker(site));
+                    updateSiteList(nearbySites);
+                    updateStatistics(nearbySites);
+                }
+            });
+
+            // Search functionality
+            document.getElementById('site-search').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                if (searchTerm.length < 2) {
+                    if (userLocation) {
+                        const nearbySites = findNearbySites();
+                        clearMarkers();
+                        nearbySites.forEach(site => addMarker(site));
+                        updateSiteList(nearbySites);
+                        updateStatistics(nearbySites);
+                    } else {
+                        document.getElementById('show-all-sites').click();
+                    }
+                    return;
+                }
+
+                // For demo, we'll just show a message about searching
+                document.getElementById('site-info').innerHTML = `
+                    <h3>🔍 Search Results</h3>
+                    <p>Searching for cultural heritage sites matching "${searchTerm}". Use the AI integration to get detailed information about any location.</p>
+                `;
+                clearMarkers();
+                updateSiteList([]);
+                updateStatistics([]);
+            });
+        }
+
+        // Enhanced touch event handling for mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add touch feedback class to interactive elements
+            const interactiveElements = document.querySelectorAll(
+                '.nav-item, .ribbon-item, .scanner-btn, .location-btn, ' +
+                '.action-btn, .merch-btn, .auth-btn, .home-btn, .welcome-btn, .site-card'
+            );
+            
+            interactiveElements.forEach(el => {
+                el.classList.add('touch-feedback');
+                
+                // Prevent context menu on long press for mobile
+                el.addEventListener('contextmenu', (e) => {
+                    if (scannerApp && scannerApp.state.isMobile) {
+                        e.preventDefault();
+                    }
+                });
+            });
+            
+            // Initialize map when maps page is loaded
+            if (document.getElementById('heritage-map')) {
+                initMap();
+            }
+        });
+
+        // Handle page visibility changes for mobile optimization
+        document.addEventListener('visibilitychange', () => {
+            if (scannerApp && document.hidden && scannerApp.state.cameraStream) {
+                // Stop camera when page is not visible to save battery
+                scannerApp.state.cameraStream.getTracks().forEach(track => track.stop());
+                scannerApp.state.cameraStream = null;
+            }
+            
+            // Reinitialize camera when page becomes visible again and we're on scanner page
+            if (!document.hidden && scannerApp && 
+                document.getElementById('scanner').classList.contains('active')) {
+                setTimeout(() => {
+                    if (!scannerApp.state.cameraStream) {
+                        scannerApp.initCamera();
+                    }
+                }, 300);
+            }
+        });
+
+        // Handle mobile back button (Android)
+        let backButtonPressCount = 0;
+        document.addEventListener('backbutton', handleBackButton, false);
+        
+        function handleBackButton() {
+            if (scannerApp && scannerApp.state.isMobile) {
+                const activeSection = document.querySelector('.page-section.active');
+                
+                if (activeSection && activeSection.id !== 'home') {
+                    // Navigate to home if not already there
+                    navigateToPage('home');
+                    backButtonPressCount = 0;
+                } else {
+                    // Double tap to exit
+                    backButtonPressCount++;
+                    
+                    if (backButtonPressCount === 1) {
+                        showToast('Press back again to exit', 'info');
+                        setTimeout(() => { backButtonPressCount = 0; }, 2000);
+                    } else if (backButtonPressCount === 2) {
+                        // Exit app (for cordova/phonegap) or close window
+                        if (window.navigator.app) {
+                            window.navigator.app.exitApp();
+                        } else {
+                            window.close();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Enhanced showToast function (global)
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            if (type === 'success') toast.style.background = '#10B981';
+            else if (type === 'error') toast.style.background = '#EF4444';
+            else if (type === 'warning') toast.style.background = '#F59E0B';
+            else toast.style.background = '#6B7280';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
