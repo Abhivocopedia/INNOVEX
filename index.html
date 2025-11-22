@@ -617,12 +617,14 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* Maps Page - UPDATED WITH COMPREHENSIVE MAP */
+        /* Maps Page - FIXED */
         .maps-container {
             display: flex;
             height: calc(100vh - 200px);
             margin-bottom: 2rem;
             border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
         }
 
         .maps-sidebar {
@@ -631,17 +633,29 @@
             padding: 20px;
             overflow-y: auto;
             border-right: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
         .maps-view {
             flex: 1;
             position: relative;
             overflow: hidden;
+            min-height: 400px;
         }
 
         #heritage-map {
             width: 100%;
             height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* Ensure map container has proper dimensions */
+        .maps-container:not(.loaded) #heritage-map {
+            visibility: hidden;
         }
 
         .search-box {
@@ -1404,6 +1418,24 @@
                 transform: scale(0.98);
                 opacity: 0.8;
             }
+            
+            /* Responsive fixes for map */
+            .maps-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .maps-sidebar {
+                width: 100%;
+                height: 300px;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .maps-view {
+                height: 400px;
+                min-height: 400px;
+            }
         }
         
         /* High DPI screen optimizations */
@@ -1499,22 +1531,6 @@
                 position: relative;
                 margin-bottom: 1rem;
                 transform: none;
-            }
-
-            .maps-container {
-                flex-direction: column;
-                height: auto;
-            }
-
-            .maps-sidebar {
-                width: 100%;
-                height: 300px;
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-            }
-
-            .maps-view {
-                height: 400px;
             }
 
             .heritage-info {
@@ -1760,7 +1776,7 @@
                 </div>
             </section>
 
-            <!-- Maps Page - UPDATED WITH COMPREHENSIVE MAP -->
+            <!-- Maps Page - FIXED -->
             <section id="maps" class="page-section">
                 <div class="container">
                     <div class="section-header">
@@ -1771,7 +1787,7 @@
                         <p class="section-subtitle">Discover cultural sites and heritage locations across India</p>
                     </div>
                     
-                    <div class="maps-container">
+                    <div class="maps-container" id="maps-container">
                         <div class="maps-sidebar">
                             <h1 style="color: var(--accent); margin-bottom: 20px;">🇮🇳 Cultural Heritage Map</h1>
                             
@@ -3187,6 +3203,90 @@
             }
         });
 
+        // COMPREHENSIVE CULTURAL HERITAGE MAP FUNCTIONALITY - FIXED
+        // Map variables
+        let map;
+        let userLocation = null;
+        let markers = [];
+        let mapInitialized = false;
+
+        // Initialize map - FIXED VERSION
+        function initMap() {
+            console.log("Initializing map...");
+            
+            // Check if map container exists and has dimensions
+            const mapContainer = document.getElementById('heritage-map');
+            if (!mapContainer) {
+                console.error("Map container not found");
+                return;
+            }
+            
+            // Ensure map container has proper dimensions
+            const container = document.getElementById('maps-container');
+            if (container) {
+                container.classList.add('loaded');
+            }
+            
+            // Create map centered on India
+            map = L.map('heritage-map', {
+                zoomControl: true,
+                attributionControl: true
+            }).setView([20.5937, 78.9629], 5);
+
+            // Add OpenStreetMap tiles with error handling
+            const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18,
+                errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+            }).addTo(map);
+
+            // Handle tile loading errors
+            osmLayer.on('tileerror', function(error) {
+                console.warn('Tile loading error:', error);
+            });
+
+            // Add a second tile layer as backup
+            const esriLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            });
+
+            // Try to detect if tiles are loading properly
+            setTimeout(function() {
+                if (map && !map.hasLayer(osmLayer)) {
+                    console.log("OpenStreetMap tiles not loading, trying Esri imagery");
+                    map.addLayer(esriLayer);
+                }
+            }, 2000);
+
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Mark map as initialized
+            mapInitialized = true;
+            
+            // Trigger a resize to ensure proper rendering
+            setTimeout(function() {
+                if (map) {
+                    map.invalidateSize();
+                }
+            }, 100);
+
+            console.log("Map initialized successfully!");
+        }
+
+        // Function to ensure map is properly initialized when page is shown
+        function ensureMapInitialized() {
+            if (!mapInitialized && document.getElementById('maps').classList.contains('active')) {
+                // Small delay to ensure DOM is ready
+                setTimeout(initMap, 100);
+            } else if (map && mapInitialized) {
+                // If map exists but might need refresh
+                setTimeout(function() {
+                    map.invalidateSize();
+                }, 300);
+            }
+        }
+
         // Navigation between pages
         function navigateToPage(target) {
             // Hide all sections
@@ -3230,9 +3330,12 @@
                 }
             }
             
-            // Request location permission when navigating to maps
+            // Initialize map when navigating to maps page
             if (target === 'maps') {
-                // Small delay to let the map initialize first
+                // Ensure map is properly initialized
+                setTimeout(ensureMapInitialized, 100);
+                
+                // Request location permission when navigating to maps
                 setTimeout(() => {
                     if (!navigator.geolocation) return;
                     
@@ -3285,46 +3388,13 @@
             navigateToPage('merch');
         });
 
-        // Add interactive elements
-        document.querySelectorAll('.feed-card, .site-card, .ar-frame, .merch-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
-                this.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-            });
-        });
-
-        // COMPREHENSIVE CULTURAL HERITAGE MAP FUNCTIONALITY
-        // Map variables
-        let map;
-        let userLocation = null;
-        let markers = [];
-
-        // Initialize map
-        function initMap() {
-            console.log("Initializing map...");
-            
-            // Create map centered on India
-            map = L.map('heritage-map').setView([20.5937, 78.9629], 5);
-
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 18
-            }).addTo(map);
-
-            // Setup event listeners
-            setupEventListeners();
-
-            console.log("Map initialized successfully!");
-        }
-
-        // Add marker to map
+        // Add marker to map - FIXED
         function addMarker(site) {
+            if (!map) {
+                console.error("Map not initialized");
+                return;
+            }
+            
             const iconColor = getColorByType(site.type);
             const iconHtml = getIconByType(site.type);
             
@@ -3349,7 +3419,7 @@
                         Latitude: ${site.lat.toFixed(4)}<br>
                         Longitude: ${site.lng.toFixed(4)}
                     </div>
-                    <button class="action-btn read-aloud-btn touch-feedback" style="margin-top: 10px; width: 100%;" onclick="getLocationDetails(${site.lat}, ${site.lng}, '${site.name}')">
+                    <button class="action-btn read-aloud-btn touch-feedback" style="margin-top: 10px; width: 100%;" onclick="getLocationDetails(${site.lat}, ${site.lng}, '${site.name.replace(/'/g, "\\'")}')">
                         🔍 Get Detailed Info
                     </button>
                 </div>
@@ -3362,9 +3432,15 @@
             markers.push(marker);
         }
 
-        // Clear all markers
+        // Clear all markers - FIXED
         function clearMarkers() {
-            markers.forEach(marker => map.removeLayer(marker));
+            if (!map) return;
+            
+            markers.forEach(marker => {
+                if (map.hasLayer(marker)) {
+                    map.removeLayer(marker);
+                }
+            });
             markers = [];
         }
 
@@ -3606,164 +3682,207 @@
             return filteredSites;
         }
 
-        // Setup event listeners
+        // Setup event listeners - FIXED
         function setupEventListeners() {
             // Get location button
-            document.getElementById('get-location').addEventListener('click', function() {
-                if (navigator.geolocation) {
-                    this.innerHTML = '📍 Locating...';
-                    this.disabled = true;
+            const getLocationBtn = document.getElementById('get-location');
+            if (getLocationBtn) {
+                getLocationBtn.addEventListener('click', function() {
+                    if (!map) {
+                        console.error("Map not initialized");
+                        return;
+                    }
+                    
+                    if (navigator.geolocation) {
+                        this.innerHTML = '📍 Locating...';
+                        this.disabled = true;
 
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            userLocation = {
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            };
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                userLocation = {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude
+                                };
 
-                            // Add user marker
-                            const userMarker = L.marker([userLocation.lat, userLocation.lng], {
-                                icon: L.divIcon({
-                                    className: 'custom-marker',
-                                    html: '<div style="background: #27ae60; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">📍</div>',
-                                    iconSize: [30, 30],
-                                    iconAnchor: [15, 15]
-                                })
-                            }).addTo(map).bindPopup('Your Current Location');
+                                // Add user marker
+                                const userMarker = L.marker([userLocation.lat, userLocation.lng], {
+                                    icon: L.divIcon({
+                                        className: 'custom-marker',
+                                        html: '<div style="background: #27ae60; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">📍</div>',
+                                        iconSize: [30, 30],
+                                        iconAnchor: [15, 15]
+                                    })
+                                }).addTo(map).bindPopup('Your Current Location');
 
-                            // Center map on user location
-                            map.setView([userLocation.lat, userLocation.lng], 10);
+                                // Center map on user location
+                                map.setView([userLocation.lat, userLocation.lng], 10);
 
-                            // Find and display nearby sites
+                                // Find and display nearby sites
+                                const nearbySites = findNearbySites();
+                                clearMarkers();
+                                nearbySites.forEach(site => addMarker(site));
+                                updateSiteList(nearbySites);
+                                updateStatistics(nearbySites);
+
+                                getLocationBtn.innerHTML = '📍 Use My Location';
+                                getLocationBtn.disabled = false;
+
+                                // Update site info
+                                document.getElementById('site-info').innerHTML = `
+                                    <h3>📍 Nearby Cultural Sites</h3>
+                                    <p>Found ${nearbySites.length} cultural heritage sites within ${document.getElementById('radius-filter').value} km radius</p>
+                                `;
+                            },
+                            function(error) {
+                                alert('Unable to get your location. Please ensure location services are enabled.');
+                                getLocationBtn.innerHTML = '📍 Use My Location';
+                                getLocationBtn.disabled = false;
+                            }
+                        );
+                    } else {
+                        alert('Geolocation is not supported by your browser.');
+                    }
+                });
+            }
+
+            // Show all sites button
+            const showAllSitesBtn = document.getElementById('show-all-sites');
+            if (showAllSitesBtn) {
+                showAllSitesBtn.addEventListener('click', function() {
+                    if (!map) {
+                        console.error("Map not initialized");
+                        return;
+                    }
+                    
+                    // Load a few major sites for demonstration
+                    const majorSites = [
+                        {
+                            name: "Taj Mahal, Agra",
+                            lat: 27.1751,
+                            lng: 78.0421,
+                            type: "monument",
+                            description: "Iconic white marble mausoleum, UNESCO World Heritage Site",
+                            status: "preserved"
+                        },
+                        {
+                            name: "Golden Temple, Amritsar",
+                            lat: 31.6200,
+                            lng: 74.8765,
+                            type: "gurudwara",
+                            description: "Most sacred shrine of Sikhism",
+                            status: "preserved"
+                        },
+                        {
+                            name: "Red Fort, Delhi",
+                            lat: 28.6562,
+                            lng: 77.2410,
+                            type: "fort",
+                            description: "Historic fort that served as main residence of Mughal Emperors",
+                            status: "preserved"
+                        }
+                    ];
+                    
+                    clearMarkers();
+                    majorSites.forEach(site => addMarker(site));
+                    updateSiteList(majorSites);
+                    updateStatistics(majorSites);
+                    map.setView([20.5937, 78.9629], 5);
+                    document.getElementById('site-info').innerHTML = '<h3>🏛️ Major Indian Cultural Heritage Sites</h3><p>Showing major cultural heritage locations across India</p>';
+                });
+            }
+
+            // Category filter
+            const categoryFilter = document.getElementById('category-filter');
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', function() {
+                    const category = this.value;
+                    if (category === 'all') {
+                        if (userLocation) {
                             const nearbySites = findNearbySites();
                             clearMarkers();
                             nearbySites.forEach(site => addMarker(site));
                             updateSiteList(nearbySites);
                             updateStatistics(nearbySites);
-
-                            document.getElementById('get-location').innerHTML = '📍 Use My Location';
-                            document.getElementById('get-location').disabled = false;
-
-                            // Update site info
-                            document.getElementById('site-info').innerHTML = `
-                                <h3>📍 Nearby Cultural Sites</h3>
-                                <p>Found ${nearbySites.length} cultural heritage sites within ${document.getElementById('radius-filter').value} km radius</p>
-                            `;
-                        },
-                        function(error) {
-                            alert('Unable to get your location. Please ensure location services are enabled.');
-                            document.getElementById('get-location').innerHTML = '📍 Use My Location';
-                            document.getElementById('get-location').disabled = false;
+                        } else {
+                            showAllSitesBtn.click();
                         }
-                    );
-                } else {
-                    alert('Geolocation is not supported by your browser.');
-                }
-            });
-
-            // Show all sites button
-            document.getElementById('show-all-sites').addEventListener('click', function() {
-                // Load a few major sites for demonstration
-                const majorSites = [
-                    {
-                        name: "Taj Mahal, Agra",
-                        lat: 27.1751,
-                        lng: 78.0421,
-                        type: "monument",
-                        description: "Iconic white marble mausoleum, UNESCO World Heritage Site",
-                        status: "preserved"
-                    },
-                    {
-                        name: "Golden Temple, Amritsar",
-                        lat: 31.6200,
-                        lng: 74.8765,
-                        type: "gurudwara",
-                        description: "Most sacred shrine of Sikhism",
-                        status: "preserved"
-                    },
-                    {
-                        name: "Red Fort, Delhi",
-                        lat: 28.6562,
-                        lng: 77.2410,
-                        type: "fort",
-                        description: "Historic fort that served as main residence of Mughal Emperors",
-                        status: "preserved"
+                    } else {
+                        // For demo purposes, we'll just show a message
+                        document.getElementById('site-info').innerHTML = `
+                            <h3>🔍 Search for ${category} Sites</h3>
+                            <p>Use the search box to find specific ${category} sites or click "Show All India" to see major sites.</p>
+                        `;
+                        clearMarkers();
+                        updateSiteList([]);
+                        updateStatistics([]);
                     }
-                ];
-                
-                clearMarkers();
-                majorSites.forEach(site => addMarker(site));
-                updateSiteList(majorSites);
-                updateStatistics(majorSites);
-                map.setView([20.5937, 78.9629], 5);
-                document.getElementById('site-info').innerHTML = '<h3>🏛️ Major Indian Cultural Heritage Sites</h3><p>Showing major cultural heritage locations across India</p>';
-            });
+                });
+            }
 
-            // Category filter
-            document.getElementById('category-filter').addEventListener('change', function() {
-                const category = this.value;
-                if (category === 'all') {
+            // Radius filter
+            const radiusFilter = document.getElementById('radius-filter');
+            if (radiusFilter) {
+                radiusFilter.addEventListener('change', function() {
                     if (userLocation) {
                         const nearbySites = findNearbySites();
                         clearMarkers();
                         nearbySites.forEach(site => addMarker(site));
                         updateSiteList(nearbySites);
                         updateStatistics(nearbySites);
-                    } else {
-                        document.getElementById('show-all-sites').click();
                     }
-                } else {
-                    // For demo purposes, we'll just show a message
+                });
+            }
+
+            // Search functionality
+            const siteSearch = document.getElementById('site-search');
+            if (siteSearch) {
+                siteSearch.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    if (searchTerm.length < 2) {
+                        if (userLocation) {
+                            const nearbySites = findNearbySites();
+                            clearMarkers();
+                            nearbySites.forEach(site => addMarker(site));
+                            updateSiteList(nearbySites);
+                            updateStatistics(nearbySites);
+                        } else {
+                            showAllSitesBtn.click();
+                        }
+                        return;
+                    }
+
+                    // For demo, we'll just show a message about searching
                     document.getElementById('site-info').innerHTML = `
-                        <h3>🔍 Search for ${category} Sites</h3>
-                        <p>Use the search box to find specific ${category} sites or click "Show All India" to see major sites.</p>
+                        <h3>🔍 Search Results</h3>
+                        <p>Searching for cultural heritage sites matching "${searchTerm}". Use the AI integration to get detailed information about any location.</p>
                     `;
                     clearMarkers();
                     updateSiteList([]);
                     updateStatistics([]);
-                }
-            });
-
-            // Radius filter
-            document.getElementById('radius-filter').addEventListener('change', function() {
-                if (userLocation) {
-                    const nearbySites = findNearbySites();
-                    clearMarkers();
-                    nearbySites.forEach(site => addMarker(site));
-                    updateSiteList(nearbySites);
-                    updateStatistics(nearbySites);
-                }
-            });
-
-            // Search functionality
-            document.getElementById('site-search').addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                if (searchTerm.length < 2) {
-                    if (userLocation) {
-                        const nearbySites = findNearbySites();
-                        clearMarkers();
-                        nearbySites.forEach(site => addMarker(site));
-                        updateSiteList(nearbySites);
-                        updateStatistics(nearbySites);
-                    } else {
-                        document.getElementById('show-all-sites').click();
-                    }
-                    return;
-                }
-
-                // For demo, we'll just show a message about searching
-                document.getElementById('site-info').innerHTML = `
-                    <h3>🔍 Search Results</h3>
-                    <p>Searching for cultural heritage sites matching "${searchTerm}". Use the AI integration to get detailed information about any location.</p>
-                `;
-                clearMarkers();
-                updateSiteList([]);
-                updateStatistics([]);
-            });
+                });
+            }
         }
 
-        // Enhanced touch event handling for mobile
+        // Add interactive elements
+        document.querySelectorAll('.feed-card, .site-card, .ar-frame, .merch-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            });
+        });
+
+        // Enhanced DOM ready handler for map initialization
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize map when maps page is initially loaded
+            if (document.getElementById('maps').classList.contains('active')) {
+                setTimeout(initMap, 500);
+            }
+            
             // Add touch feedback class to interactive elements
             const interactiveElements = document.querySelectorAll(
                 '.nav-item, .ribbon-item, .scanner-btn, .location-btn, ' +
@@ -3780,10 +3899,14 @@
                     }
                 });
             });
-            
-            // Initialize map when maps page is loaded
-            if (document.getElementById('heritage-map')) {
-                initMap();
+        });
+
+        // Handle window resize for map
+        window.addEventListener('resize', function() {
+            if (map && mapInitialized) {
+                setTimeout(function() {
+                    map.invalidateSize();
+                }, 300);
             }
         });
 
@@ -3854,6 +3977,50 @@
                 toast.style.display = 'none';
             }, 3000);
         }
+
+        // Sample heritage sites data
+        const heritageSites = [
+            {
+                name: "Taj Mahal, Agra",
+                lat: 27.1751,
+                lng: 78.0421,
+                type: "monument",
+                description: "Iconic white marble mausoleum, UNESCO World Heritage Site",
+                status: "preserved"
+            },
+            {
+                name: "Golden Temple, Amritsar",
+                lat: 31.6200,
+                lng: 74.8765,
+                type: "gurudwara",
+                description: "Most sacred shrine of Sikhism",
+                status: "preserved"
+            },
+            {
+                name: "Red Fort, Delhi",
+                lat: 28.6562,
+                lng: 77.2410,
+                type: "fort",
+                description: "Historic fort that served as main residence of Mughal Emperors",
+                status: "preserved"
+            },
+            {
+                name: "Hampi Ruins, Karnataka",
+                lat: 15.3350,
+                lng: 76.4600,
+                type: "monument",
+                description: "Ruins of the Vijayanagara Empire, UNESCO World Heritage Site",
+                status: "preserved"
+            },
+            {
+                name: "Khajuraho Temples, MP",
+                lat: 24.8510,
+                lng: 79.9250,
+                type: "temple",
+                description: "Group of Hindu and Jain temples famous for their erotic sculptures",
+                status: "preserved"
+            }
+        ];
     </script>
 </body>
 </html>
